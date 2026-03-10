@@ -1,0 +1,123 @@
+import axios from "axios";
+import React from "react";
+import { useForm } from "react-hook-form";
+
+import { toast } from "react-toastify";
+import { useNavigate, Link } from "react-router-dom";
+
+export default function Login() {
+
+  const navigate = useNavigate();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm();
+
+  const submitHandler = async (data) => {
+    try {
+      const res = await axios.post("https://node5.onrender.com/user/login", data);
+      if (res.status == 200) {
+        toast.success("Login success");
+        navigate("/");
+      }
+    } catch (err) {
+      toast.error("Login failed..");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-200 flex items-center justify-center p-6">
+
+      {/* CARD */}
+      <div className="bg-white shadow-lg rounded-md w-full max-w-5xl flex overflow-hidden">
+
+        {/* LEFT IMAGE */}
+        <div className="w-1/2 hidden md:block">
+          <img
+            src="https://images.unsplash.com/photo-1557804506-669a67965ba0"
+            alt="room"
+            className="h-full w-full object-cover"
+          />
+        </div>
+
+        {/* RIGHT FORM */}
+        <div className="w-full md:w-1/2 p-10">
+
+          <h2 className="text-2xl font-bold mb-2">PG-FINDER</h2>
+          <p className="text-gray-500 mb-6">Sign into your account</p>
+
+          <form onSubmit={handleSubmit(submitHandler)} className="space-y-4">
+
+            {/* EMAIL */}
+            <div>
+              <label className="text-sm text-gray-600">Email address</label>
+              <input
+                type="email"
+                className="w-full p-2 border rounded mt-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                {...register("email", {
+                  required: "Email is required"
+                })}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            {/* PASSWORD */}
+            <div>
+              <label className="text-sm text-gray-600">Password</label>
+              <input
+                type="password"
+                className="w-full p-2 border rounded mt-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Minimum 6 characters"
+                  }
+                })}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            {/* BUTTON */}
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
+            >
+              Login
+            </button>
+
+            <p className="text-sm text-gray-500 mt-3">
+              Forgot password?
+            </p>
+
+            <p className="text-sm text-gray-500">
+  Don't have an account?{" "}
+  <Link 
+    to="/signup" 
+    className="text-blue-600 font-semibold hover:underline"
+  >
+    Register here
+  </Link>
+</p>
+
+          </form>
+
+          <p className="text-xs text-gray-400 mt-6">
+            Terms of use. Privacy policy
+          </p>
+
+        </div>
+      </div>
+    </div>
+  );
+}
