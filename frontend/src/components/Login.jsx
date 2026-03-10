@@ -17,7 +17,7 @@ export default function Login() {
 
   const submitHandler = async (data) => {
     try {
-      const res = await axios.post("https://node5.onrender.com/user/login", data);
+      const res = await axios.post("http://localhost:3000/user/login", data);
       if (res.status == 200) {
         toast.success("Login success");
         navigate("/");
