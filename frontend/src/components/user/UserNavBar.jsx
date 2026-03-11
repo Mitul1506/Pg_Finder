@@ -1,24 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const UserNavBar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
   const location = useLocation();
-  const navigate = useNavigate(); // 🔥 added
+  const navigate = useNavigate();
+
+  const profileRef = useRef(null);
+
+  const token = localStorage.getItem("token");
 
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Find PG", path: "/pg-list" },
     { name: "My Bookings", path: "/bookings" },
-    { name: "Profile", path: "/profile" },
-    
   ];
 
-  // 🔥 Logout Function
+  // Load user from localStorage
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setUser(storedUser);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLogout = () => {
-    localStorage.removeItem("token");   // remove JWT token
-    localStorage.removeItem("user");    // if you stored user data
-    navigate("/login");                      // redirect to Login page
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   return (
@@ -27,19 +49,19 @@ const UserNavBar = () => {
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
           {/* Logo */}
-          <h1 className="text-2xl font-bold text-indigo-600">
+          <Link to="/" className="text-2xl font-bold text-indigo-600">
             PG Finder
-          </h1>
+          </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
-                className={`font-medium transition duration-300 ${
+                className={`font-medium transition ${
                   location.pathname === link.path
-                    ? "text-indigo-600 border-b-2 border-indigo-600"
+                    ? "text-indigo-600 border-b-2 border-indigo-600 pb-1"
                     : "text-gray-600 hover:text-indigo-600"
                 }`}
               >
@@ -48,49 +70,138 @@ const UserNavBar = () => {
             ))}
           </div>
 
-          {/* Desktop Logout Button */}
-          <div className="hidden md:block">
-            <button
-              onClick={handleLogout}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-            >
-              Login/Signup
-            </button>
+          {/* Right Section */}
+          <div className="hidden md:flex items-center space-x-6">
+
+            {/* Notification */}
+            {token && (
+              <button className="text-xl cursor-pointer hover:text-indigo-600">
+                🔔
+              </button>
+            )}
+
+            {/* Profile Dropdown */}
+            {token ? (
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                >
+                  {user ? user.firstName : "Profile"} ▼
+                </button>
+
+                {profileOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg">
+
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      👤 My Profile
+                    </Link>
+
+                    <Link
+                      to="/bookings"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      📖 My Bookings
+                    </Link>
+
+                    <Link
+                      to="/payments"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      💳 Payments
+                    </Link>
+
+                    <Link
+                      to="/reviews"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                    >
+                      ⭐ Reviews
+                    </Link>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+                    >
+                      🚪 Logout
+                    </button>
+
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+              >
+                Login / Signup
+              </button>
+            )}
           </div>
 
-          {/* Mobile Toggle */}
+          {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <button onClick={() => setIsOpen(!isOpen)}>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="text-2xl"
+            >
               ☰
             </button>
           </div>
+
         </div>
 
         {/* Mobile Menu */}
-        {isOpen && (
+        {menuOpen && (
           <div className="md:hidden bg-white shadow-md px-6 pb-4 space-y-3">
+
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
-                onClick={() => setIsOpen(false)}
+                onClick={() => setMenuOpen(false)}
                 className="block text-gray-700 hover:text-indigo-600"
               >
                 {link.name}
               </Link>
             ))}
 
-            <button
-              onClick={handleLogout}
-              className="w-full bg-indigo-600 text-white py-2 rounded-lg"
-            >
-              Logout
-            </button>
+            {token ? (
+              <>
+                <Link to="/profile" className="block text-gray-700">
+                  Profile
+                </Link>
+
+                <Link to="/payments" className="block text-gray-700">
+                  Payments
+                </Link>
+
+                <Link to="/reviews" className="block text-gray-700">
+                  Reviews
+                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full bg-red-500 text-white py-2 rounded-lg"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="w-full bg-indigo-600 text-white py-2 rounded-lg"
+              >
+                Login / Signup
+              </button>
+            )}
+
           </div>
         )}
       </nav>
 
-      {/* Page Content */}
       <div className="pt-20">
         <Outlet />
       </div>

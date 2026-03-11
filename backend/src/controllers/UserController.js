@@ -1,28 +1,63 @@
 const userSchema = require("../models/UserModel")
 const bcrypt = require("bcrypt")
+const mailSend = require("../utils/MailUtil")
 
-const registerUser = async(req,res)=>{
-    try{
+const registerUser = async (req, res) => {
 
-        const hashedPassword = await bcrypt.hash(req.body.password,10)
+  try {
 
-        const savedUser = await userSchema.create({
-            ...req.body,
-            password:hashedPassword
-        })
+    const { firstName, lastName, email, phone, password } = req.body
 
-        res.status(201).json({
-            message:"user created successfully",
-            data:savedUser
-        })
+    // Check if user already exists
+    const existingUser = await userSchema.findOne({ email })
 
-    }catch(err){
-        res.status(500).json({
-            message:"error while creating user",
-            err:err
-        })
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists with this email"
+      })
     }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Create user
+    const savedUser = await userSchema.create({
+      firstName,
+      lastName,
+      email,
+      phone,
+      password: hashedPassword
+    })
+
+    // Send welcome email
+    await mailSend(
+      email,
+      "Welcome to PG Finder",
+      `Hello ${firstName}, your account has been successfully created. Welcome to PG Finder!`
+    )
+
+    res.status(201).json({
+      message: "User created successfully",
+      data: {
+        id: savedUser._id,
+        firstName: savedUser.firstName,
+        lastName: savedUser.lastName,
+        email: savedUser.email,
+        phone: savedUser.phone
+      }
+    })
+
+  } catch (err) {
+
+    res.status(500).json({
+      message: "Error while creating user",
+      error: err.message
+    })
+
+  }
+
 }
+
 
 const loginUser = async (req, res) => {
   try {
@@ -47,14 +82,22 @@ const loginUser = async (req, res) => {
 
     res.status(200).json({
       message: "Login successful",
-      user
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role
+      }
     })
 
   } catch (error) {
+
     res.status(500).json({
       message: "Login error",
       error: error.message
     })
+
   }
 }
 

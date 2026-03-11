@@ -1,57 +1,103 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 const Profile = () => {
+
   const [isEditing, setIsEditing] = useState(false);
 
   const [user, setUser] = useState({
-    name: "Mitul Patel",
-    email: "mitul@gmail.com",
-    phone: "9876543210",
-    city: "Ahmedabad",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    city: ""
   });
+
+  // Load user from localStorage
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+
+    if (storedUser) {
+      setUser({
+        firstName: storedUser.firstName || "",
+        lastName: storedUser.lastName || "",
+        email: storedUser.email || "",
+        phone: storedUser.phone || "",
+        city: storedUser.city || ""
+      });
+    }
+  }, []);
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
   const handleSave = () => {
+
+    localStorage.setItem("user", JSON.stringify(user));
+
     setIsEditing(false);
-    alert("Profile Updated Successfully!");
+
+    toast.success("Profile Updated Successfully!");
+
   };
+
+  const fullName = `${user.firstName} ${user.lastName}`;
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
+
       <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl p-8">
 
         {/* HEADER */}
         <div className="flex items-center gap-6 mb-8">
+
           <div className="w-24 h-24 bg-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold">
-            {user.name.charAt(0)}
+            {user.firstName ? user.firstName.charAt(0).toUpperCase() : "U"}
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold">{user.name}</h2>
+            <h2 className="text-2xl font-bold">{fullName}</h2>
             <p className="text-gray-500">{user.email}</p>
           </div>
+
         </div>
 
         {/* PROFILE FORM */}
         <div className="grid md:grid-cols-2 gap-6">
 
+          {/* FIRST NAME */}
           <div>
-            <label className="text-sm text-gray-600">Full Name</label>
+            <label className="text-sm text-gray-600">First Name</label>
+
             <input
               type="text"
-              name="name"
-              value={user.name}
+              name="firstName"
+              value={user.firstName}
               disabled={!isEditing}
               onChange={handleChange}
               className="w-full p-3 border rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
+          {/* LAST NAME */}
+          <div>
+            <label className="text-sm text-gray-600">Last Name</label>
+
+            <input
+              type="text"
+              name="lastName"
+              value={user.lastName}
+              disabled={!isEditing}
+              onChange={handleChange}
+              className="w-full p-3 border rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          {/* EMAIL */}
           <div>
             <label className="text-sm text-gray-600">Email</label>
+
             <input
               type="email"
               name="email"
@@ -61,8 +107,10 @@ const Profile = () => {
             />
           </div>
 
+          {/* PHONE
           <div>
             <label className="text-sm text-gray-600">Phone</label>
+
             <input
               type="text"
               name="phone"
@@ -73,8 +121,10 @@ const Profile = () => {
             />
           </div>
 
+         
           <div>
             <label className="text-sm text-gray-600">City</label>
+
             <input
               type="text"
               name="city"
@@ -83,7 +133,7 @@ const Profile = () => {
               onChange={handleChange}
               className="w-full p-3 border rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-          </div>
+          </div> */}
 
         </div>
 
@@ -118,6 +168,7 @@ const Profile = () => {
         </div>
 
       </div>
+
     </div>
   );
 };
