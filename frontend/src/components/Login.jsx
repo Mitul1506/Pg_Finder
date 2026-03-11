@@ -56,8 +56,7 @@ export default function Login() {
           navigate("/");
         }
 
-        // 🔥 Reload to update navbar state
-        window.location.reload();
+       
 
       }
 

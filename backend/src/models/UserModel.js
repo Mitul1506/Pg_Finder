@@ -38,4 +38,4 @@ const userSchema = new Schema({
         enum:["active","inactive","deleted","blocked"]
     }
 })
-module.exports = mongoose.model("users",userSchema)
+module.exports = mongoose.model("user",userSchema)

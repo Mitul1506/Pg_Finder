@@ -6,7 +6,7 @@ const registerUser = async (req, res) => {
 
   try {
 
-    const { firstName, lastName, email, phone, password } = req.body
+    const { firstName, lastName, email, password } = req.body
 
     // Check if user already exists
     const existingUser = await userSchema.findOne({ email })
@@ -25,16 +25,18 @@ const registerUser = async (req, res) => {
       firstName,
       lastName,
       email,
-      phone,
+     
       password: hashedPassword
     })
 
-    // Send welcome email
-    await mailSend(
-      email,
-      "Welcome to PG Finder",
-      `Hello ${firstName}, your account has been successfully created. Welcome to PG Finder!`
-    )
+  
+
+
+await mailSend(
+  email,
+  "Welcome to PG Finder",
+  `Hello ${firstName}, your account has been created successfully. Welcome to PG Finder!`
+)
 
     res.status(201).json({
       message: "User created successfully",
