@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const UserNavBar = () => {
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [user, setUser] = useState(null);
 
   const location = useLocation();
   const navigate = useNavigate();
-
   const profileRef = useRef(null);
 
   const token = localStorage.getItem("token");
@@ -19,11 +19,25 @@ const UserNavBar = () => {
     { name: "My Bookings", path: "/bookings" },
   ];
 
-  // Load user from localStorage
+  // Load user whenever route changes
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    setUser(storedUser);
-  }, []);
+
+  const loadUser = () => {
+    const storedUser = localStorage.getItem("user");
+    setUser(storedUser ? JSON.parse(storedUser) : null);
+  };
+
+  // Load on first render
+  loadUser();
+
+  // Listen for login/logout changes
+  window.addEventListener("userChanged", loadUser);
+
+  return () => {
+    window.removeEventListener("userChanged", loadUser);
+  };
+
+}, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -34,18 +48,26 @@ const UserNavBar = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  window.dispatchEvent(new Event("userChanged"));
+
+  navigate("/login");
+};
 
   return (
     <>
       <nav className="bg-white shadow-md fixed w-full z-50">
+
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
           {/* Logo */}
@@ -73,9 +95,9 @@ const UserNavBar = () => {
           {/* Right Section */}
           <div className="hidden md:flex items-center space-x-6">
 
-            {/* Notification */}
             {token && (
-              <button className="text-xl cursor-pointer hover:text-indigo-600">
+              <button onClick={() => navigate("/Notification")}
+               className="text-xl cursor-pointer hover:text-indigo-600">
                 🔔
               </button>
             )}
@@ -83,11 +105,12 @@ const UserNavBar = () => {
             {/* Profile Dropdown */}
             {token ? (
               <div className="relative" ref={profileRef}>
+
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
                   className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
                 >
-                  {user ? user.firstName : "Profile"} ▼
+                  {user?.firstName || "Profile"} ▼
                 </button>
 
                 {profileOpen && (
@@ -132,13 +155,16 @@ const UserNavBar = () => {
                 )}
               </div>
             ) : (
+
               <button
                 onClick={() => navigate("/login")}
                 className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
               >
                 Login / Signup
               </button>
+
             )}
+
           </div>
 
           {/* Mobile Menu Button */}
@@ -190,12 +216,14 @@ const UserNavBar = () => {
                 </button>
               </>
             ) : (
+
               <button
                 onClick={() => navigate("/login")}
                 className="w-full bg-indigo-600 text-white py-2 rounded-lg"
               >
                 Login / Signup
               </button>
+
             )}
 
           </div>

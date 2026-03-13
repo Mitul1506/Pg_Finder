@@ -1,28 +1,46 @@
-const Dispute = require("../models/DisputeModel")
+const disputeSchema = require("../models/DisputeModel")
 
-exports.createDispute = async(req,res)=>{
- try{
-  const dispute = await Dispute.create(req.body)
-  res.json(dispute)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+const createDispute = async(req,res)=>{
+    try{
+
+        const savedDispute = await disputeSchema.create(req.body)
+
+        res.status(201).json({
+            message:"dispute created..",
+            data:savedDispute
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error while creating dispute",
+            err:error
+        })
+
+    }
 }
 
-exports.getAllDisputes = async(req,res)=>{
- try{
-  const disputes = await Dispute.find()
-  res.json(disputes)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+const getAllDisputes = async(req,res)=>{
+    try{
+
+        const disputes = await disputeSchema.find()
+
+        res.status(200).json({
+            message:"disputes fetched..",
+            data:disputes
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error while fetching disputes",
+            err:error
+        })
+
+    }
 }
 
-exports.updateDispute = async(req,res)=>{
- try{
-  const dispute = await Dispute.findByIdAndUpdate(req.params.id,req.body,{new:true})
-  res.json(dispute)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+module.exports = {
+    createDispute,
+    getAllDisputes
 }

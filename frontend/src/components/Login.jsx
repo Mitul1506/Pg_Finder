@@ -16,65 +16,52 @@ export default function Login() {
   } = useForm();
 
   const submitHandler = async (data) => {
+  try {
 
-    try {
+    setLoading(true);
 
-      setLoading(true);
+    const res = await axios.post(
+      "http://localhost:3000/user/login",
+      data
+    );
 
-      const res = await axios.post(
-        "http://localhost:3000/user/login",
-        data
-      );
+    if (res.status === 200) {
 
-      if (res.status === 200) {
+      const user = res.data.user;
+      const token = res.data.token;
 
-        const user = res.data.user;
-        const token = res.data.token;
+      // Save user
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
 
-        // STORE USER
-        if (user) {
-          localStorage.setItem("user", JSON.stringify(user));
-        }
+      // Update axios header
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-        // STORE TOKEN
-        if (token) {
-          localStorage.setItem("token", token);
+      // 🔥 Notify navbar that user changed
+      window.dispatchEvent(new Event("userChanged"));
 
-          // set axios default header
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        }
+      toast.success("Login successful");
 
-        toast.success("Login successful");
-
-        // ROLE BASED REDIRECT
-        if (user?.role === "admin") {
-
-          navigate("/AdminSideBar");
-
-        } else {
-
-          navigate("/");
-        }
-
-       
-
-      }
-
-    } catch (err) {
-
-      if (err.response?.data?.message) {
-        toast.error(err.response.data.message);
+      if (user?.role === "admin") {
+        navigate("/AdminSideBar");
       } else {
-        toast.error("Login failed");
+        navigate("/");
       }
-
-    } finally {
-
-      setLoading(false);
 
     }
-  };
 
+  } catch (err) {
+
+    if (err.response?.data?.message) {
+      toast.error(err.response.data.message);
+    } else {
+      toast.error("Login failed");
+    }
+
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="min-h-screen bg-gray-200 flex items-center justify-center p-6">
 

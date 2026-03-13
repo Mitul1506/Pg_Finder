@@ -1,59 +1,54 @@
 const mongoose = require("mongoose")
+const Schema = mongoose.Schema
 
-const pgSchema = new mongoose.Schema({
+const pgSchema = new Schema({
 
-  landlordId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+    landlordId:{
+        type:Schema.Types.ObjectId,
+        ref:"user"
+    },
 
-  pgName: String,
+    pgName:{
+        type:String
+    },
 
-  description: String,
+    description:{
+        type:String
+    },
 
-  pgType: {
-    type: String,
-    enum: ["Boys", "Girls", "Unisex"]
-  },
+    pgType:{
+        type:String
+    },
 
-  address: {
-    street: String,
-    city: String,
-    state: String,
-    pincode: String
-  },
+    address:{
+        type:Object
+    },
 
-  amenities: [String],
+    amenities:{
+        type:Array
+    },
 
-  photos: [String],
+    photos:{
+        type:Array
+    },
 
-  rules: [String],
+    rules:{
+        type:Array
+    },
 
-  priceRange: {
-    min: Number,
-    max: Number
-  },
+    priceRange:{
+        type:Object
+    },
 
-  availabilityStatus: {
-    type: String,
-    enum: ["Available", "Full"]
-  },
+    availabilityStatus:{
+        type:String
+    },
 
-  averageRating: {
-    type: Number,
-    default: 0
-  },
+    verificationBadge:{
+        type:Boolean,
+        default:false
+    }
 
-  totalReviews: {
-    type: Number,
-    default: 0
-  },
+})
 
-  verificationBadge: {
-    type: Boolean,
-    default: false
-  }
-
-}, { timestamps: true })
-
-module.exports = mongoose.model("Pg", pgSchema)
+module.exports = mongoose.model("pgs",pgSchema)

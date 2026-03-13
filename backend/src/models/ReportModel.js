@@ -1,16 +1,21 @@
 const mongoose = require("mongoose")
+const Schema = mongoose.Schema
 
-const reportSchema = new mongoose.Schema({
+const reportSchema = new Schema({
 
-  reportType: String,
+    reportType:{
+        type:String
+    },
 
-  generatedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+    generatedBy:{
+        type:Schema.Types.ObjectId,
+        ref:"user"
+    },
 
-  data: Object
+    data:{
+        type:Object
+    }
 
-}, { timestamps: true })
+})
 
-module.exports = mongoose.model("Report", reportSchema)
+module.exports = mongoose.model("reports",reportSchema)

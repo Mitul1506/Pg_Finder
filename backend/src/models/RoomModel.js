@@ -1,27 +1,37 @@
 const mongoose = require("mongoose")
+const Schema = mongoose.Schema
 
-const roomSchema = new mongoose.Schema({
+const roomSchema = new Schema({
 
-  pgId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Pg"
-  },
+    pgId:{
+        type:Schema.Types.ObjectId,
+        ref:"pgs"
+    },
 
-  roomType: {
-    type: String,
-    enum: ["Single", "Double", "Triple"]
-  },
+    roomType:{
+        type:String
+    },
 
-  totalBeds: Number,
+    totalBeds:{
+        type:Number
+    },
 
-  availableBeds: Number,
+    availableBeds:{
+        type:Number
+    },
 
-  monthlyRent: Number,
+    monthlyRent:{
+        type:Number
+    },
 
-  deposit: Number,
+    deposit:{
+        type:Number
+    },
 
-  roomAmenities: [String]
+    roomAmenities:{
+        type:Array
+    }
 
-}, { timestamps: true })
+})
 
-module.exports = mongoose.model("Room", roomSchema)
+module.exports = mongoose.model("rooms",roomSchema)

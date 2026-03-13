@@ -1,34 +1,39 @@
 const mongoose = require("mongoose")
+const Schema = mongoose.Schema
 
-const disputeSchema = new mongoose.Schema({
+const disputeSchema = new Schema({
 
-  bookingId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Booking"
-  },
+    bookingId:{
+        type:Schema.Types.ObjectId,
+        ref:"bookings"
+    },
 
-  raisedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+    raisedBy:{
+        type:Schema.Types.ObjectId,
+        ref:"users"
+    },
 
-  againstUserId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+    againstUserId:{
+        type:Schema.Types.ObjectId,
+        ref:"user"
+    },
 
-  issueType: String,
+    issueType:{
+        type:String
+    },
 
-  description: String,
+    description:{
+        type:String
+    },
 
-  status: {
-    type: String,
-    enum: ["Open", "Resolved"],
-    default: "Open"
-  },
+    status:{
+        type:String
+    },
 
-  adminRemarks: String
+    adminRemarks:{
+        type:String
+    }
 
-}, { timestamps: true })
+})
 
-module.exports = mongoose.model("Dispute", disputeSchema)
+module.exports = mongoose.model("disputes",disputeSchema)

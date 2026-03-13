@@ -1,46 +1,46 @@
-const Payment = require("../models/PaymentModel")
+const paymentSchema = require("../models/PaymentModel")
 
-exports.createPayment = async(req,res)=>{
- try{
-  const payment = await Payment.create(req.body)
-  res.json(payment)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+const createPayment = async(req,res)=>{
+    try{
+
+        const savedPayment = await paymentSchema.create(req.body)
+
+        res.status(201).json({
+            message:"payment created..",
+            data:savedPayment
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error while creating payment",
+            err:error
+        })
+
+    }
 }
 
-exports.getAllPayments = async(req,res)=>{
- try{
-  const payments = await Payment.find()
-  res.json(payments)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+const getAllPayments = async(req,res)=>{
+    try{
+
+        const payments = await paymentSchema.find()
+
+        res.status(200).json({
+            message:"payments fetched..",
+            data:payments
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error while fetching payments",
+            err:error
+        })
+
+    }
 }
 
-exports.getPaymentById = async(req,res)=>{
- try{
-  const payment = await Payment.findById(req.params.id)
-  res.json(payment)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
-}
-
-exports.updatePayment = async(req,res)=>{
- try{
-  const payment = await Payment.findByIdAndUpdate(req.params.id,req.body,{new:true})
-  res.json(payment)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
-}
-
-exports.deletePayment = async(req,res)=>{
- try{
-  await Payment.findByIdAndDelete(req.params.id)
-  res.json({message:"Payment deleted"})
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+module.exports = {
+    createPayment,
+    getAllPayments
 }

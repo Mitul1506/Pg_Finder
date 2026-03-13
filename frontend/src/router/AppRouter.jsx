@@ -8,6 +8,10 @@ import Home from "../components/user/Home";
 import PgList from "../components/user/PgList";
 import MyBookings from "../components/user/MyBookings";
 import Profile from "../components/user/Profile";
+import RoomList from "../components/user/RoomList";
+import Reviews from "../components/user/Reviews";
+import Message from "../components/user/Message";
+import Notification from "../components/user/Notification";
 
 
 const router = createBrowserRouter([
@@ -29,6 +33,11 @@ const router = createBrowserRouter([
     ],
   },
   { path: "/adminsidebar", element: <AdminSideBar /> },
+  { path: "/RoomList", element: <RoomList /> },
+  { path: "/Reviews", element: <Reviews/>},
+  { path: "/Message", element: <Message/>},
+  { path: "/Notification", element: <Notification/>}
+
 ]);
 
 const AppRouter = () => {

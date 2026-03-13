@@ -1,18 +1,14 @@
 const router = require("express").Router()
 
 const {
-  createDispute,
-  getAllDisputes,
-  updateDispute
+    createDispute,
+    getAllDisputes
 } = require("../controllers/DisputeController")
 
-// CREATE
-router.post("/", createDispute)
+// CREATE DISPUTE
+router.post("/",createDispute)
 
-// READ
-router.get("/", getAllDisputes)
-
-// UPDATE
-router.put("/:id", updateDispute)
+// GET ALL DISPUTES
+router.get("/",getAllDisputes)
 
 module.exports = router

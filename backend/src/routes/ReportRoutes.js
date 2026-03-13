@@ -1,14 +1,14 @@
 const router = require("express").Router()
 
 const {
-  createReport,
-  getReports
+    createReport,
+    getAllReports
 } = require("../controllers/ReportController")
 
 // CREATE REPORT
-router.post("/", createReport)
+router.post("/",createReport)
 
-// GET REPORTS
-router.get("/", getReports)
+// GET ALL REPORTS
+router.get("/",getAllReports)
 
 module.exports = router

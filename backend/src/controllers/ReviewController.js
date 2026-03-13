@@ -1,28 +1,46 @@
-const Review = require("../models/ReviewModel")
+const reviewSchema = require("../models/ReviewModel")
 
-exports.createReview = async(req,res)=>{
- try{
-  const review = await Review.create(req.body)
-  res.json(review)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+const createReview = async(req,res)=>{
+    try{
+
+        const savedReview = await reviewSchema.create(req.body)
+
+        res.status(201).json({
+            message:"review created..",
+            data:savedReview
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error while creating review",
+            err:error
+        })
+
+    }
 }
 
-exports.getAllReviews = async(req,res)=>{
- try{
-  const reviews = await Review.find().populate("tenantId pgId")
-  res.json(reviews)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+const getAllReviews = async(req,res)=>{
+    try{
+
+        const reviews = await reviewSchema.find()
+
+        res.status(200).json({
+            message:"reviews fetched..",
+            data:reviews
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error while fetching reviews",
+            err:error
+        })
+
+    }
 }
 
-exports.deleteReview = async(req,res)=>{
- try{
-  await Review.findByIdAndDelete(req.params.id)
-  res.json({message:"Review deleted"})
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+module.exports = {
+    createReview,
+    getAllReviews
 }

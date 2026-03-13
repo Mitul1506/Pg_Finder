@@ -1,46 +1,46 @@
-const Booking = require("../models/BookingModel")
+const bookingSchema = require("../models/BookingModel")
 
-exports.createBooking = async(req,res)=>{
- try{
-  const booking = await Booking.create(req.body)
-  res.json(booking)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+const createBooking = async(req,res)=>{
+    try{
+
+        const savedBooking = await bookingSchema.create(req.body)
+
+        res.status(201).json({
+            message:"booking created..",
+            data:savedBooking
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error while creating booking",
+            err:error
+        })
+
+    }
 }
 
-exports.getAllBookings = async(req,res)=>{
- try{
-  const bookings = await Booking.find().populate("tenantId pgId roomId")
-  res.json(bookings)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+const getAllBookings = async(req,res)=>{
+    try{
+
+        const bookings = await bookingSchema.find()
+
+        res.status(200).json({
+            message:"bookings fetched..",
+            data:bookings
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error while fetching bookings",
+            err:error
+        })
+
+    }
 }
 
-exports.getBookingById = async(req,res)=>{
- try{
-  const booking = await Booking.findById(req.params.id)
-  res.json(booking)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
-}
-
-exports.updateBooking = async(req,res)=>{
- try{
-  const booking = await Booking.findByIdAndUpdate(req.params.id,req.body,{new:true})
-  res.json(booking)
- }catch(err){
-  res.status(500).json({error:err.message})
- }
-}
-
-exports.deleteBooking = async(req,res)=>{
- try{
-  await Booking.findByIdAndDelete(req.params.id)
-  res.json({message:"Booking deleted"})
- }catch(err){
-  res.status(500).json({error:err.message})
- }
+module.exports = {
+    createBooking,
+    getAllBookings
 }

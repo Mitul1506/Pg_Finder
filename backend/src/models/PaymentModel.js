@@ -1,36 +1,39 @@
 const mongoose = require("mongoose")
+const Schema = mongoose.Schema
 
-const paymentSchema = new mongoose.Schema({
+const paymentSchema = new Schema({
 
-  bookingId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Booking"
-  },
+    bookingId:{
+        type:Schema.Types.ObjectId,
+        ref:"bookings"
+    },
 
-  tenantId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+    tenantId:{
+        type:Schema.Types.ObjectId,
+        ref:"user"
+    },
 
-  landlordId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+    landlordId:{
+        type:Schema.Types.ObjectId,
+        ref:"user"
+    },
 
-  amount: Number,
+    amount:{
+        type:Number
+    },
 
-  method: {
-    type: String,
-    enum: ["UPI", "Card", "NetBanking"]
-  },
+    method:{
+        type:String
+    },
 
-  transactionId: String,
+    transactionId:{
+        type:String
+    },
 
-  status: {
-    type: String,
-    enum: ["Success", "Failed"]
-  }
+    status:{
+        type:String
+    }
 
-}, { timestamps: true })
+})
 
-module.exports = mongoose.model("Payment", paymentSchema)
+module.exports = mongoose.model("payments",paymentSchema)

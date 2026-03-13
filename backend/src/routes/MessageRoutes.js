@@ -1,14 +1,14 @@
 const router = require("express").Router()
 
 const {
-  sendMessage,
-  getMessages
+    createMessage,
+    getAllMessages
 } = require("../controllers/MessageController")
 
-// SEND MESSAGE
-router.post("/", sendMessage)
+// CREATE MESSAGE
+router.post("/",createMessage)
 
 // GET ALL MESSAGES
-router.get("/", getMessages)
+router.get("/",getAllMessages)
 
 module.exports = router

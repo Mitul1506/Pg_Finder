@@ -1,14 +1,14 @@
 const router = require("express").Router()
 
 const {
-  createNotification,
-  getNotifications
+    createNotification,
+    getAllNotifications
 } = require("../controllers/NotificationController")
 
-// CREATE
-router.post("/", createNotification)
+// CREATE NOTIFICATION
+router.post("/",createNotification)
 
-// READ
-router.get("/", getNotifications)
+// GET ALL NOTIFICATIONS
+router.get("/",getAllNotifications)
 
 module.exports = router

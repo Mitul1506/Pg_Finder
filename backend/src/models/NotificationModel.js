@@ -1,26 +1,30 @@
 const mongoose = require("mongoose")
+const Schema = mongoose.Schema
 
-const notificationSchema = new mongoose.Schema({
+const notificationSchema = new Schema({
 
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+    userId:{
+        type:Schema.Types.ObjectId,
+        ref:"user"
+    },
 
-  title: String,
+    title:{
+        type:String
+    },
 
-  body: String,
+    body:{
+        type:String
+    },
 
-  type: {
-    type: String,
-    enum: ["Booking", "Payment", "System"]
-  },
+    type:{
+        type:String
+    },
 
-  isRead: {
-    type: Boolean,
-    default: false
-  }
+    isRead:{
+        type:Boolean,
+        default:false
+    }
 
-}, { timestamps: true })
+})
 
-module.exports = mongoose.model("Notification", notificationSchema)
+module.exports = mongoose.model("notifications",notificationSchema)
