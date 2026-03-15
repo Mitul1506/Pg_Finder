@@ -3,40 +3,33 @@ const Schema = mongoose.Schema
 
 const bookingSchema = new Schema({
 
-    tenantId:{
-        type:Schema.Types.ObjectId,
-        ref:"user"
-    },
+pgId:{
+type:Schema.Types.ObjectId,
+ref:"pgs",
+required:true
+},
 
-    pgId:{
-        type:Schema.Types.ObjectId,
-        ref:"pgs"
-    },
+roomId:{
+type:Schema.Types.ObjectId,
+ref:"rooms",
+required:true
+},
 
-    roomId:{
-        type:Schema.Types.ObjectId,
-        ref:"rooms"
-    },
+tenantId:{
+type:Schema.Types.ObjectId,
+ref:"user",
+required:true
+},
 
-    checkInDate:{
-        type:Date
-    },
+bookingDate:{
+type:Date,
+default:Date.now
+},
 
-    months:{
-        type:Number
-    },
-
-    bookingStatus:{
-        type:String
-    },
-
-    totalAmount:{
-        type:Number
-    },
-
-    paymentStatus:{
-        type:String
-    }
+status:{
+type:String,
+default:"Confirmed"
+}
 
 })
 

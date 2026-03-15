@@ -1,14 +1,20 @@
 const router = require("express").Router()
 
 const {
-    createMessage,
-    getAllMessages
+createMessage,
+getAllMessages,
+getMessageById,
+deleteMessage
 } = require("../controllers/MessageController")
 
-// CREATE MESSAGE
+// CREATE
 router.post("/",createMessage)
 
-// GET ALL MESSAGES
+// READ
 router.get("/",getAllMessages)
+router.get("/:id",getMessageById)
+
+// DELETE
+router.delete("/:id",deleteMessage)
 
 module.exports = router

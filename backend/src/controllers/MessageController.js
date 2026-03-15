@@ -39,8 +39,48 @@ const getAllMessages = async(req,res)=>{
 
     }
 }
+const getMessageById = async(req,res)=>{
+    try{
 
-module.exports = {
-    createMessage,
-    getAllMessages
+        const message = await messageSchema.findById(req.params.id)
+
+        res.status(200).json({
+            message:"message fetched",
+            data:message
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error fetching message",
+            err:error
+        })
+
+    }
+}
+
+const deleteMessage = async(req,res)=>{
+    try{
+
+        await messageSchema.findByIdAndDelete(req.params.id)
+
+        res.status(200).json({
+            message:"message deleted"
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error deleting message",
+            err:error
+        })
+
+    }
+}
+
+module.exports={
+createMessage,
+getAllMessages,
+getMessageById,
+deleteMessage
 }

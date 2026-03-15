@@ -76,6 +76,7 @@ const Signup = () => {
           lastName: formData.lastname,
           email: formData.email,
           password: formData.password,
+          
         }
       );
 

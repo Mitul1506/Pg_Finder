@@ -1,14 +1,24 @@
 const router = require("express").Router()
 
 const {
-    createReview,
-    getAllReviews
+createReview,
+getAllReviews,
+getReviewById,
+updateReview,
+deleteReview
 } = require("../controllers/ReviewController")
 
-// CREATE REVIEW
+// CREATE
 router.post("/",createReview)
 
-// GET ALL REVIEWS
+// READ
 router.get("/",getAllReviews)
+router.get("/:id",getReviewById)
+
+// UPDATE
+router.put("/:id",updateReview)
+
+// DELETE
+router.delete("/:id",deleteReview)
 
 module.exports = router

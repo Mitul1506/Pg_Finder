@@ -1,121 +1,90 @@
-import { useEffect, useState } from "react"
+import React,{useEffect,useState} from "react"
 import axios from "axios"
-import { toast } from "react-toastify"
+import {toast} from "react-toastify"
 
-export default function Notification() {
+export default function Notification(){
 
-  const [notifications, setNotifications] = useState([])
+const [notifications,setNotifications] = useState([])
+const [message,setMessage] = useState("")
 
-  const user = JSON.parse(localStorage.getItem("user"))
+const getNotifications = async()=>{
 
-  // Fetch notifications
-  const getNotifications = async () => {
+const res = await axios.get("http://localhost:3000/notifications")
 
-    if (!user) return
+setNotifications(res.data.data)
 
-    try {
+}
 
-      const res = await axios.get(`http://localhost:3000/notifications?userId=${user._id}`)
+useEffect(()=>{
+getNotifications()
+},[])
 
-      setNotifications(res.data.data)
+const addNotification = async(e)=>{
 
-    } catch (error) {
+e.preventDefault()
 
-      console.log(error)
-      toast.error("Failed to load notifications")
+await axios.post("http://localhost:3000/notifications",{
+message
+})
 
-    }
+toast.success("Notification added")
 
-  }
+setMessage("")
 
-  useEffect(() => {
+getNotifications()
 
-    getNotifications()
+}
 
-  }, [])
+const deleteNotification = async(id)=>{
 
-  // Mark as read
-  const markAsRead = async (id) => {
+await axios.delete(`http://localhost:3000/notifications/${id}`)
 
-    try {
+toast.success("Deleted")
 
-      await axios.put(`http://localhost:3000/notifications/${id}`)
+getNotifications()
 
-      toast.success("Notification marked as read")
+}
 
-      getNotifications()
+return(
 
-    } catch (error) {
+<div className="p-10">
 
-      toast.error("Failed to update notification")
+<h1 className="text-3xl font-bold mb-6">Notifications</h1>
 
-    }
+<form onSubmit={addNotification} className="flex gap-4 mb-6">
 
-  }
+<input
+placeholder="Message"
+value={message}
+onChange={(e)=>setMessage(e.target.value)}
+className="border p-2 rounded"
+/>
 
-  return (
+<button className="bg-indigo-600 text-white px-4 py-2 rounded">
+Send
+</button>
 
-    <div className="bg-gray-100 min-h-screen p-10">
+</form>
 
-      <h1 className="text-3xl font-bold text-center mb-8">
-        Notifications
-      </h1>
+{notifications.map((n)=>(
 
-      <div className="max-w-3xl mx-auto space-y-4">
+<div key={n._id} className="border p-4 mb-3 rounded">
 
-        {notifications.length === 0 ? (
+<p>{n.message}</p>
 
-          <p className="text-center text-gray-500">
-            No notifications found
-          </p>
+<button
+onClick={()=>deleteNotification(n._id)}
+className="bg-red-500 text-white px-3 py-1 rounded mt-2"
+>
+Delete
+</button>
 
-        ) : (
+</div>
 
-          notifications.map((n) => (
+))}
 
-            <div
-              key={n._id}
-              className={`p-5 rounded-xl shadow-md flex justify-between items-center
-              ${n.isRead ? "bg-white" : "bg-indigo-50 border-l-4 border-indigo-600"}`}
-            >
+</div>
 
-              <div>
-
-                <h3 className="text-lg font-semibold">
-                  {n.title}
-                </h3>
-
-                <p className="text-gray-600">
-                  {n.message}
-                </p>
-
-                <p className="text-sm text-gray-400 mt-1">
-                  {new Date(n.createdAt).toLocaleString()}
-                </p>
-
-              </div>
-
-              {!n.isRead && (
-
-                <button
-                  onClick={()=>markAsRead(n._id)}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-                >
-                  Mark Read
-                </button>
-
-              )}
-
-            </div>
-
-          ))
-
-        )}
-
-      </div>
-
-    </div>
-
-  )
+)
 
 }

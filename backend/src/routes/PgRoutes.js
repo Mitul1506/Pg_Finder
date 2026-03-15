@@ -1,14 +1,19 @@
 const router = require("express").Router()
 
 const {
-    createPg,
-    getAllPgs
+createPg,
+getAllPgs,
+getPgById,
+updatePg,
+deletePg
 } = require("../controllers/PgController")
 
-// CREATE PG
 router.post("/",createPg)
 
-// GET ALL PG
 router.get("/",getAllPgs)
+router.get("/:id",getPgById)
+
+router.put("/:id",updatePg)
+router.delete("/:id",deletePg)
 
 module.exports = router

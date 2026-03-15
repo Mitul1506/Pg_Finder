@@ -12,6 +12,13 @@ import RoomList from "../components/user/RoomList";
 import Reviews from "../components/user/Reviews";
 import Message from "../components/user/Message";
 import Notification from "../components/user/Notification";
+import RoomDetails from "../components/user/RoomDetails";
+import BookRoom from "../components/user/BookRoom";
+import Booking from "../components/user/Booking";
+import Dashboard from "../components/admin/Dashboard";
+import Users from "../components/admin/Users";
+import Landlords from "../components/admin/Landlords";
+import Pgs from "../components/admin/Pgs";
 
 
 const router = createBrowserRouter([
@@ -29,14 +36,26 @@ const router = createBrowserRouter([
       { path: "home", element: <Home /> },
       { path: "pg-list", element: <PgList /> },
        { path: "bookings", element: <MyBookings /> },
+       { path: "/Notification", element: <Notification/>},
        { path: "profile", element: <Profile/> },
-    ],
-  },
-  { path: "/adminsidebar", element: <AdminSideBar /> },
-  { path: "/RoomList", element: <RoomList /> },
+        { path: "/RoomList/:pgId", element: <RoomList /> },
+  { path: "/room/:id", element: <RoomDetails/> },
+  { path: "/book-room/:id", element: <BookRoom/> },
+  { path: "/booking/:roomId", element: <Booking/>},
   { path: "/Reviews", element: <Reviews/>},
   { path: "/Message", element: <Message/>},
-  { path: "/Notification", element: <Notification/>}
+    ],
+  },
+  {
+  path: "/adminsidebar",
+  element: <AdminSideBar />,
+  children: [
+    { path: "dashboard", element: <Dashboard/> },
+     { path: "users", element: <Users /> },
+      { path: "landlords", element: <Landlords /> },
+      { path: "pgs", element: <Pgs /> }
+  ]
+}
 
 ]);
 

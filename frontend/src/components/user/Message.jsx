@@ -1,144 +1,90 @@
-import { useEffect, useState } from "react"
+import React,{useEffect,useState} from "react"
 import axios from "axios"
-import { toast } from "react-toastify"
+import {toast} from "react-toastify"
 
-export default function Message() {
+export default function Message(){
 
-  const [messages, setMessages] = useState([])
-  const [text, setText] = useState("")
+const [messages,setMessages] = useState([])
+const [text,setText] = useState("")
 
-  const user = JSON.parse(localStorage.getItem("user"))
+const getMessages = async()=>{
 
-  // Fetch messages
-  const getMessages = async () => {
+const res = await axios.get("http://localhost:3000/messages")
 
-    try {
+setMessages(res.data.data)
 
-      const res = await axios.get("http://localhost:3000/messages")
+}
 
-      setMessages(res.data.data)
+useEffect(()=>{
+getMessages()
+},[])
 
-    } catch (error) {
+const sendMessage = async(e)=>{
 
-      console.log(error)
-      toast.error("Failed to load messages")
+e.preventDefault()
 
-    }
+await axios.post("http://localhost:3000/messages",{
+text
+})
 
-  }
+toast.success("Message sent")
 
-  useEffect(() => {
+setText("")
 
-    getMessages()
+getMessages()
 
-  }, [])
+}
 
-  // Send message
-  const sendMessage = async (e) => {
+const deleteMessage = async(id)=>{
 
-    e.preventDefault()
+await axios.delete(`http://localhost:3000/messages/${id}`)
 
-    if (!user) {
-      toast.error("Please login first")
-      return
-    }
+toast.success("Deleted")
 
-    try {
+getMessages()
 
-      await axios.post("http://localhost:3000/messages", {
+}
 
-        senderId: user._id,
-        message: text
+return(
 
-      })
+<div className="p-10">
 
-      setText("")
+<h1 className="text-3xl font-bold mb-6">Messages</h1>
 
-      toast.success("Message sent")
+<form onSubmit={sendMessage} className="flex gap-4 mb-6">
 
-      getMessages()
+<input
+placeholder="Write message..."
+value={text}
+onChange={(e)=>setText(e.target.value)}
+className="border p-2 rounded w-96"
+/>
 
-    } catch (error) {
+<button className="bg-indigo-600 text-white px-4 py-2 rounded">
+Send
+</button>
 
-      toast.error("Failed to send message")
+</form>
 
-    }
+{messages.map((msg)=>(
 
-  }
+<div key={msg._id} className="border p-4 mb-3 rounded">
 
-  return (
+<p>{msg.text}</p>
 
-    <div className="bg-gray-100 min-h-screen flex flex-col items-center p-10">
+<button
+onClick={()=>deleteMessage(msg._id)}
+className="bg-red-500 text-white px-3 py-1 rounded mt-2"
+>
+Delete
+</button>
 
-      <h1 className="text-3xl font-bold mb-6">
-        Messages
-      </h1>
+</div>
 
-      {/* Message List */}
+))}
 
-      <div className="w-full max-w-2xl bg-white rounded-xl shadow-md p-6 h-96 overflow-y-scroll mb-6">
+</div>
 
-        {messages.length === 0 ? (
-          <p className="text-gray-500">No messages yet</p>
-        ) : (
-
-          messages.map((msg) => (
-
-            <div
-              key={msg._id}
-              className={`mb-4 flex ${msg.senderId?._id === user?._id ? "justify-end" : "justify-start"}`}
-            >
-
-              <div
-                className={`px-4 py-2 rounded-lg max-w-xs ${
-                  msg.senderId?._id === user?._id
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-
-                <p className="text-sm font-semibold">
-                  {msg.senderId?.firstName || "User"}
-                </p>
-
-                <p>{msg.message}</p>
-
-              </div>
-
-            </div>
-
-          ))
-
-        )}
-
-      </div>
-
-      {/* Send Message */}
-
-      <form
-        onSubmit={sendMessage}
-        className="w-full max-w-2xl flex gap-4"
-      >
-
-        <input
-          type="text"
-          placeholder="Type your message..."
-          value={text}
-          onChange={(e)=>setText(e.target.value)}
-          className="flex-1 border p-3 rounded-lg"
-          required
-        />
-
-        <button
-          className="bg-indigo-600 text-white px-6 rounded-lg hover:bg-indigo-700"
-        >
-          Send
-        </button>
-
-      </form>
-
-    </div>
-
-  )
+)
 
 }

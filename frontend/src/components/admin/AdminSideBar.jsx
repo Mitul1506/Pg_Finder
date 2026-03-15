@@ -1,49 +1,114 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 
 const AdminSideBar = () => {
+
   const location = useLocation();
+  const navigate = useNavigate();
+  const [adminName, setAdminName] = useState("");
+
+  useEffect(() => {
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (user.role !== "admin") {
+      navigate("/");
+      return;
+    }
+
+    setAdminName(user.firstName);
+
+  }, [navigate]);
+
+
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
+
 
   const menuItems = [
-    { name: "Dashboard", path: "/admin/dashboard" },
-    { name: "Manage PG", path: "/admin/pg" },
+    { name: "Dashboard", path: "/AdminSideBar/dashboard" },
+    { name: "Users", path: "/AdminSideBar/users" },
+    { name: "Landlords", path: "/AdminSideBar/landlords" },
+    { name: "PGs", path: "/AdminSideBar/pgs" },
+    { name: "Rooms", path: "/admin/rooms" },
     { name: "Bookings", path: "/admin/bookings" },
-    { name: "Users", path: "/admin/users" },
+    { name: "PG Verification", path: "/admin/verification" },
+    { name: "Amenities", path: "/admin/amenities" },
     { name: "Reports", path: "/admin/reports" },
+    { name: "Notifications", path: "/admin/notifications" },
+    { name: "Settings", path: "/admin/settings" }
   ];
 
+
+
   return (
-    <div className="h-screen w-64 bg-gray-900 text-white fixed shadow-lg">
-      
-      {/* Logo */}
-      <div className="p-6 text-2xl font-bold border-b border-gray-700">
-        Admin Panel
-      </div>
 
-      {/* Menu */}
-      <div className="mt-6 space-y-2">
-        {menuItems.map((item) => (
-          <Link
-            key={item.name}
-            to={item.path}
-            className={`block px-6 py-3 transition duration-300 ${
-              location.pathname === item.path
-                ? "bg-indigo-600"
-                : "hover:bg-gray-700"
-            }`}
+    <div className="flex">
+
+      {/* Sidebar */}
+      <div className="h-screen w-64 bg-gray-900 text-white fixed shadow-lg flex flex-col">
+
+        <div className="p-6 text-2xl font-bold border-b border-gray-700">
+          PG Finder Admin
+        </div>
+
+        <div className="px-6 py-4 border-b border-gray-700 text-sm text-gray-300">
+          Logged in as <span className="font-semibold">{adminName}</span>
+        </div>
+
+        <div className="mt-4 flex-1 overflow-y-auto">
+
+          {menuItems.map((item) => (
+
+            <Link
+              key={item.name}
+              to={item.path}
+              className={`block px-6 py-3 transition duration-300 ${
+                location.pathname === item.path
+                  ? "bg-indigo-600"
+                  : "hover:bg-gray-700"
+              }`}
+            >
+              {item.name}
+            </Link>
+
+          ))}
+
+        </div>
+
+        <div className="p-6 border-t border-gray-700">
+
+          <button
+            onClick={handleLogout}
+            className="w-full bg-red-500 py-2 rounded-lg hover:bg-red-600 transition"
           >
-            {item.name}
-          </Link>
-        ))}
+            Logout
+          </button>
+
+        </div>
+
       </div>
 
-      {/* Bottom Section */}
-      <div className="absolute bottom-6 w-full px-6">
-        <button className="w-full bg-red-500 py-2 rounded-lg hover:bg-red-600 transition">
-          Logout
-        </button>
+
+      {/* Page Content */}
+      <div className="ml-64 w-full min-h-screen bg-gray-100 p-8">
+
+        <Outlet />
+
       </div>
+
     </div>
+
   );
 };
 

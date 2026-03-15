@@ -1,157 +1,109 @@
-import { useEffect, useState } from "react"
+import React,{useEffect,useState} from "react"
 import axios from "axios"
-import { toast } from "react-toastify"
+import {toast} from "react-toastify"
 
-export default function Reviews() {
+export default function Reviews(){
 
-  const [reviews, setReviews] = useState([])
-  const [rating, setRating] = useState("")
-  const [comment, setComment] = useState("")
+const [reviews,setReviews] = useState([])
+const [comment,setComment] = useState("")
+const [rating,setRating] = useState("")
 
-  const user = JSON.parse(localStorage.getItem("user"))
+const getReviews = async()=>{
 
-  // Fetch reviews
-  const getReviews = async () => {
+const res = await axios.get("http://localhost:3000/reviews")
 
-    try {
+setReviews(res.data.data)
 
-      const res = await axios.get("http://localhost:3000/reviews")
+}
 
-      setReviews(res.data.data)
+useEffect(()=>{
+getReviews()
+},[])
 
-    } catch (error) {
+const addReview = async(e)=>{
 
-      console.log(error)
-      toast.error("Failed to load reviews")
+e.preventDefault()
 
-    }
+try{
 
-  }
+await axios.post("http://localhost:3000/reviews",{
+comment,
+rating
+})
 
-  useEffect(() => {
-    getReviews()
-  }, [])
+toast.success("Review added")
 
-  // Add review
-  const submitReview = async (e) => {
+setComment("")
+setRating("")
 
-    e.preventDefault()
+getReviews()
 
-    if (!user) {
-      toast.error("Please login first")
-      return
-    }
+}catch(err){
 
-    try {
+toast.error("Error")
 
-      await axios.post("http://localhost:3000/reviews", {
+}
 
-        userId: user._id,
-        rating: rating,
-        comment: comment
+}
 
-      })
+const deleteReview = async(id)=>{
 
-      toast.success("Review added successfully")
+await axios.delete(`http://localhost:3000/reviews/${id}`)
 
-      setRating("")
-      setComment("")
+toast.success("Review deleted")
 
-      getReviews()
+getReviews()
 
-    } catch (error) {
+}
 
-      toast.error("Failed to add review")
+return(
 
-    }
+<div className="p-10">
 
-  }
+<h1 className="text-3xl font-bold mb-6">Reviews</h1>
 
-  return (
+<form onSubmit={addReview} className="flex gap-4 mb-6">
 
-    <div className="bg-gray-100 min-h-screen p-10">
+<input
+placeholder="Comment"
+value={comment}
+onChange={(e)=>setComment(e.target.value)}
+className="border p-2 rounded"
+/>
 
-      <h1 className="text-3xl font-bold text-center mb-8">
-        PG Reviews
-      </h1>
+<input
+placeholder="Rating"
+value={rating}
+onChange={(e)=>setRating(e.target.value)}
+className="border p-2 rounded"
+/>
 
-      {/* Add Review Form */}
+<button className="bg-indigo-600 text-white px-4 py-2 rounded">
+Add
+</button>
 
-      <div className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow-md mb-10">
+</form>
 
-        <h2 className="text-xl font-semibold mb-4">
-          Write a Review
-        </h2>
+{reviews.map((review)=>(
 
-        <form onSubmit={submitReview}>
+<div key={review._id} className="border p-4 rounded mb-3">
 
-          <label className="block mb-2">
-            Rating (1-5)
-          </label>
+<p>{review.comment}</p>
+<p>⭐ {review.rating}</p>
 
-          <input
-            type="number"
-            min="1"
-            max="5"
-            value={rating}
-            onChange={(e)=>setRating(e.target.value)}
-            className="border w-full p-2 rounded mb-4"
-            required
-          />
+<button
+onClick={()=>deleteReview(review._id)}
+className="bg-red-500 text-white px-3 py-1 rounded mt-2"
+>
+Delete
+</button>
 
-          <label className="block mb-2">
-            Comment
-          </label>
+</div>
 
-          <textarea
-            value={comment}
-            onChange={(e)=>setComment(e.target.value)}
-            className="border w-full p-2 rounded mb-4"
-            rows="4"
-            required
-          />
+))}
 
-          <button
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-          >
-            Submit Review
-          </button>
+</div>
 
-        </form>
-
-      </div>
-
-      {/* Review List */}
-
-      <div className="grid md:grid-cols-3 gap-6">
-
-        {reviews.map((review) => (
-
-          <div
-            key={review._id}
-            className="bg-white p-5 rounded-xl shadow-md hover:shadow-lg transition"
-          >
-
-            <h3 className="text-lg font-semibold mb-2">
-              Rating: ⭐ {review.rating}/5
-            </h3>
-
-            <p className="text-gray-700 mb-3">
-              {review.comment}
-            </p>
-
-            <p className="text-sm text-gray-500">
-              User: {review.userId?.firstName || "Anonymous"}
-            </p>
-
-          </div>
-
-        ))}
-
-      </div>
-
-    </div>
-
-  )
+)
 
 }

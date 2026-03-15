@@ -39,8 +39,73 @@ const getAllPgs = async(req,res)=>{
 
     }
 }
+const getPgById = async(req,res)=>{
+    try{
 
-module.exports = {
-    createPg,
-    getAllPgs
+        const pg = await pgSchema.findById(req.params.id)
+
+        res.status(200).json({
+            message:"pg fetched",
+            data:pg
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error fetching pg",
+            err:error
+        })
+
+    }
+}
+
+const updatePg = async(req,res)=>{
+    try{
+
+        const updatedPg = await pgSchema.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {new:true}
+        )
+
+        res.status(200).json({
+            message:"pg updated",
+            data:updatedPg
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error updating pg",
+            err:error
+        })
+
+    }
+}
+
+const deletePg = async(req,res)=>{
+    try{
+
+        await pgSchema.findByIdAndDelete(req.params.id)
+
+        res.status(200).json({
+            message:"pg deleted"
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error deleting pg",
+            err:error
+        })
+
+    }
+}
+
+module.exports={
+createPg,
+getAllPgs,
+getPgById,
+updatePg,
+deletePg
 }

@@ -39,8 +39,73 @@ const getAllNotifications = async(req,res)=>{
 
     }
 }
+const getNotificationById = async(req,res)=>{
+    try{
 
-module.exports = {
-    createNotification,
-    getAllNotifications
+        const notification = await notificationSchema.findById(req.params.id)
+
+        res.status(200).json({
+            message:"notification fetched",
+            data:notification
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error fetching notification",
+            err:error
+        })
+
+    }
+}
+
+const updateNotification = async(req,res)=>{
+    try{
+
+        const notification = await notificationSchema.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {new:true}
+        )
+
+        res.status(200).json({
+            message:"notification updated",
+            data:notification
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error updating notification",
+            err:error
+        })
+
+    }
+}
+
+const deleteNotification = async(req,res)=>{
+    try{
+
+        await notificationSchema.findByIdAndDelete(req.params.id)
+
+        res.status(200).json({
+            message:"notification deleted"
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error deleting notification",
+            err:error
+        })
+
+    }
+}
+
+module.exports={
+createNotification,
+getAllNotifications,
+getNotificationById,
+updateNotification,
+deleteNotification
 }

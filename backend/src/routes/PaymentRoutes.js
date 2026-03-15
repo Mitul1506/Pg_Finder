@@ -1,14 +1,24 @@
 const router = require("express").Router()
 
 const {
-    createPayment,
-    getAllPayments
+createPayment,
+getAllPayments,
+getPaymentById,
+updatePayment,
+deletePayment
 } = require("../controllers/PaymentController")
 
-// CREATE PAYMENT
+// CREATE
 router.post("/",createPayment)
 
-// GET ALL PAYMENTS
+// READ
 router.get("/",getAllPayments)
+router.get("/:id",getPaymentById)
+
+// UPDATE
+router.put("/:id",updatePayment)
+
+// DELETE
+router.delete("/:id",deletePayment)
 
 module.exports = router

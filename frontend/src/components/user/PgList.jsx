@@ -1,144 +1,172 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
+import { toast } from "react-toastify"
 
-const PgList = () => {
-  const navigate = useNavigate();
+export default function PgList(){
 
-  // Dummy Data (Replace with API later)
-  const [pgs] = useState([
-    {
-      id: 1,
-      name: "Sunrise PG",
-      city: "Ahmedabad",
-      price: 6500,
-      type: "Boys",
-      image:
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2",
-    },
-    {
-      id: 2,
-      name: "Green Valley PG",
-      city: "Ahmedabad",
-      price: 7500,
-      type: "Girls",
-      image:
-        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267",
-    },
-    {
-      id: 3,
-      name: "Urban Stay PG",
-      city: "Gandhinagar",
-      price: 8500,
-      type: "Co-Living",
-      image:
-        "https://images.unsplash.com/photo-1505691938895-1758d7feb511",
-    },
-  ]);
+const [pgs,setPgs] = useState([])
+const [search,setSearch] = useState("")
+const navigate = useNavigate()
 
-  const [search, setSearch] = useState("");
-  const [cityFilter, setCityFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+// GET ALL PGS
+const getPgs = async()=>{
 
-  // Filter Logic
-  const filteredPGs = pgs.filter((pg) => {
-    return (
-      pg.name.toLowerCase().includes(search.toLowerCase()) &&
-      (cityFilter === "" || pg.city === cityFilter) &&
-      (typeFilter === "" || pg.type === typeFilter)
-    );
-  });
+try{
 
-  return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      {/* Page Title */}
-      <h1 className="text-3xl font-bold text-center mb-6">
-        Find Your Perfect PG
-      </h1>
+const res = await axios.get("http://localhost:3000/pgs")
 
-      {/* Search & Filters */}
-      <div className="bg-white shadow-md rounded-xl p-4 mb-8 grid md:grid-cols-4 gap-4">
-        <input
-          type="text"
-          placeholder="Search PG name..."
-          className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+setPgs(res.data.data || [])
 
-        <select
-          className="border p-2 rounded-lg"
-          value={cityFilter}
-          onChange={(e) => setCityFilter(e.target.value)}
-        >
-          <option value="">All Cities</option>
-          <option value="Ahmedabad">Ahmedabad</option>
-          <option value="Gandhinagar">Gandhinagar</option>
-        </select>
+}catch(err){
 
-        <select
-          className="border p-2 rounded-lg"
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-        >
-          <option value="">All Types</option>
-          <option value="Boys">Boys</option>
-          <option value="Girls">Girls</option>
-          <option value="Co-Living">Co-Living</option>
-        </select>
+toast.error("Failed to load PGs")
 
-        <button
-          onClick={() => {
-            setSearch("");
-            setCityFilter("");
-            setTypeFilter("");
-          }}
-          className="bg-red-500 text-white rounded-lg hover:bg-red-600"
-        >
-          Reset
-        </button>
-      </div>
+}
 
-      {/* PG Cards */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPGs.length > 0 ? (
-          filteredPGs.map((pg) => (
-            <div
-              key={pg.id}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300"
-            >
-              <img
-                src={pg.image}
-                alt={pg.name}
-                className="h-48 w-full object-cover"
-              />
+}
 
-              <div className="p-4">
-                <h2 className="text-xl font-semibold">{pg.name}</h2>
-                <p className="text-gray-600">{pg.city}</p>
-                <p className="text-gray-800 font-bold mt-2">
-                  ₹ {pg.price} / month
-                </p>
-                <span className="inline-block mt-2 px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-full">
-                  {pg.type}
-                </span>
+useEffect(()=>{
+getPgs()
+},[])
 
-                <button
-                  onClick={() => navigate(`/pg/${pg.id}`)}
-                  className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-center col-span-full text-gray-500">
-            No PG found.
-          </p>
-        )}
-      </div>
-    </div>
-  );
-};
 
-export default PgList;
+// SEARCH FILTER
+const filteredPgs = pgs.filter((pg)=>{
+
+const name = pg.pgName?.toLowerCase() || ""
+const area = pg.address?.area?.toLowerCase() || ""
+const city = pg.address?.city?.toLowerCase() || ""
+
+return (
+name.includes(search.toLowerCase()) ||
+area.includes(search.toLowerCase()) ||
+city.includes(search.toLowerCase())
+)
+
+})
+
+
+return(
+
+<div className="pt-24 px-10 bg-gray-100 min-h-screen">
+
+{/* TITLE */}
+<h1 className="text-3xl font-bold text-center mb-8">
+Find Your Perfect PG
+</h1>
+
+
+{/* SEARCH BAR */}
+<div className="flex justify-center mb-10">
+
+<input
+type="text"
+placeholder="Search by PG name, area, or city..."
+value={search}
+onChange={(e)=>setSearch(e.target.value)}
+className="w-full md:w-1/2 p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+/>
+
+</div>
+
+
+{/* NO RESULTS */}
+{filteredPgs.length === 0 ? (
+
+<div className="text-center text-gray-500 text-lg">
+No PGs found
+</div>
+
+) : (
+
+<div className="grid md:grid-cols-3 gap-8">
+
+{filteredPgs.map((pg)=>(
+
+<div
+key={pg._id}
+className="bg-white rounded-xl shadow-md hover:shadow-xl transition duration-300 overflow-hidden"
+>
+
+{/* IMAGE */}
+<img
+src={pg.photos?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2"}
+alt="pg"
+className="h-48 w-full object-cover"
+/>
+
+<div className="p-5">
+
+{/* NAME + VERIFIED */}
+<div className="flex justify-between items-center">
+
+<h2 className="text-xl font-semibold">
+{pg.pgName}
+</h2>
+
+{pg.verificationBadge && (
+<span className="text-green-600 text-sm font-semibold">
+✔ Verified
+</span>
+)}
+
+</div>
+
+
+{/* TYPE */}
+<p className="text-gray-600 text-sm mt-1">
+Type: {pg.pgType}
+</p>
+
+
+{/* LOCATION */}
+<p className="text-gray-600 text-sm mt-1">
+{pg.address?.area}, {pg.address?.city}
+</p>
+
+
+{/* PRICE */}
+<p className="text-indigo-600 font-bold mt-2">
+₹{pg.priceRange?.min} - ₹{pg.priceRange?.max} / month
+</p>
+
+
+{/* AMENITIES */}
+<div className="flex flex-wrap gap-2 mt-3">
+
+{pg.amenities?.slice(0,4).map((a,index)=>(
+<span
+key={index}
+className="bg-gray-200 text-xs px-2 py-1 rounded"
+>
+{a}
+</span>
+))}
+
+</div>
+
+
+{/* BUTTON */}
+<button
+onClick={()=>navigate(`/RoomList/${pg._id}`)}
+className="w-full mt-4 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+>
+View Rooms
+</button>
+
+</div>
+
+</div>
+
+))}
+
+</div>
+
+)}
+
+</div>
+
+)
+
+}

@@ -39,8 +39,73 @@ const getAllDisputes = async(req,res)=>{
 
     }
 }
+const getDisputeById = async(req,res)=>{
+    try{
 
-module.exports = {
-    createDispute,
-    getAllDisputes
+        const dispute = await disputeSchema.findById(req.params.id)
+
+        res.status(200).json({
+            message:"dispute fetched",
+            data:dispute
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error fetching dispute",
+            err:error
+        })
+
+    }
+}
+
+const updateDispute = async(req,res)=>{
+    try{
+
+        const dispute = await disputeSchema.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            {new:true}
+        )
+
+        res.status(200).json({
+            message:"dispute updated",
+            data:dispute
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error updating dispute",
+            err:error
+        })
+
+    }
+}
+
+const deleteDispute = async(req,res)=>{
+    try{
+
+        await disputeSchema.findByIdAndDelete(req.params.id)
+
+        res.status(200).json({
+            message:"dispute deleted"
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error deleting dispute",
+            err:error
+        })
+
+    }
+}
+
+module.exports={
+createDispute,
+getAllDisputes,
+getDisputeById,
+updateDispute,
+deleteDispute
 }
