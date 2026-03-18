@@ -16,7 +16,7 @@ const UserNavBar = () => {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Find PG", path: "/pg-list" },
-    { name: "My Bookings", path: "/bookings" },
+    { name: "My Bookings", path: "/mybookings" },
   ];
 
   // Load user whenever route changes

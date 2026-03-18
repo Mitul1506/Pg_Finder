@@ -5,7 +5,8 @@ createPg,
 getAllPgs,
 getPgById,
 updatePg,
-deletePg
+deletePg,
+getPgsByLandlord
 } = require("../controllers/PgController")
 
 router.post("/",createPg)
@@ -15,5 +16,6 @@ router.get("/:id",getPgById)
 
 router.put("/:id",updatePg)
 router.delete("/:id",deletePg)
+router.get("/landlord/:landlordId", getPgsByLandlord)
 
 module.exports = router

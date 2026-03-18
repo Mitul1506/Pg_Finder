@@ -19,6 +19,9 @@ const messageRoutes = require("./src/routes/MessageRoutes")
 const notificationRoutes = require("./src/routes/NotificationRoutes")
 const reportRoutes = require("./src/routes/ReportRoutes")
 const disputeRoutes = require("./src/routes/DisputeRoutes")
+const mediaRoutes = require("./src/routes/MediaRoutes")
+
+app.use("/media",mediaRoutes)
 
 app.use("/user", userRoutes)
 app.use("/pgs", pgRoutes)

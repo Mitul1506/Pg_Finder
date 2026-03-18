@@ -6,7 +6,8 @@ getAllRooms,
 getRoomById,
 updateRoom,
 deleteRoom,
-getRoomsByPg
+getRoomsByPg,
+getRoomsByLandlord
 } = require("../controllers/RoomController")
 
 // CREATE ROOM
@@ -25,5 +26,6 @@ router.put("/:id",updateRoom)
 
 // DELETE
 router.delete("/:id",deleteRoom)
+router.get("/landlord/:landlordId", getRoomsByLandlord)
 
 module.exports = router

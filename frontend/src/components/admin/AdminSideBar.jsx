@@ -40,7 +40,7 @@ const AdminSideBar = () => {
     { name: "Users", path: "/AdminSideBar/users" },
     { name: "Landlords", path: "/AdminSideBar/landlords" },
     { name: "PGs", path: "/AdminSideBar/pgs" },
-    { name: "Rooms", path: "/admin/rooms" },
+    { name: "Rooms", path: "/AdminSideBar/rooms" },
     { name: "Bookings", path: "/admin/bookings" },
     { name: "PG Verification", path: "/admin/verification" },
     { name: "Amenities", path: "/admin/amenities" },

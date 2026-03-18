@@ -118,7 +118,7 @@ const Home = () => {
 
         <div className="max-w-7xl mx-auto grid sm:grid-cols-2 md:grid-cols-4 gap-8">
 
-          {["Ahmedabad", "Delhi", "Bangalore", "Pune"].map((city, index) => (
+          {["Ahmedabad", "Gandhinagar", "Vadodra", "Surat"].map((city, index) => (
             <div
               key={index}
               className="bg-gray-100 rounded-xl p-10 text-center font-semibold text-lg hover:bg-indigo-600 hover:text-white transition cursor-pointer"

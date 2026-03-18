@@ -3,34 +3,41 @@ const Schema = mongoose.Schema
 
 const bookingSchema = new Schema({
 
-pgId:{
-type:Schema.Types.ObjectId,
-ref:"pgs",
-required:true
-},
+    userId:{
+        type:Schema.Types.ObjectId,
+        ref:"user",
+        required:true
+    },
 
-roomId:{
-type:Schema.Types.ObjectId,
-ref:"rooms",
-required:true
-},
+    pgId:{
+        type:Schema.Types.ObjectId,
+        ref:"pgs",
+        required:true
+    },
 
-tenantId:{
-type:Schema.Types.ObjectId,
-ref:"user",
-required:true
-},
+    roomId:{
+        type:Schema.Types.ObjectId,
+        ref:"rooms",
+        required:true
+    },
 
-bookingDate:{
-type:Date,
-default:Date.now
-},
+    bookingDate:{
+        type:Date,
+        default:Date.now
+    },
 
-status:{
-type:String,
-default:"Confirmed"
-}
+    status:{
+        type:String,
+        enum:["pending","confirmed","cancelled"],
+        default:"confirmed"
+    },
+
+    paymentStatus:{
+        type:String,
+        enum:["pending","paid"],
+        default:"pending"
+    }
 
 })
 
-module.exports = mongoose.model("bookings",bookingSchema)
+module.exports = mongoose.model("bookings", bookingSchema)

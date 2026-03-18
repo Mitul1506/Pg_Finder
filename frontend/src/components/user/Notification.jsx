@@ -1,90 +1,63 @@
-import React,{useEffect,useState} from "react"
-import axios from "axios"
-import {toast} from "react-toastify"
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-export default function Notification(){
+const Notification = () => {
 
-const [notifications,setNotifications] = useState([])
-const [message,setMessage] = useState("")
+  const [notifications, setNotifications] = useState([]);
 
-const getNotifications = async()=>{
+  useEffect(() => {
+    getNotifications();
+  }, []);
 
-const res = await axios.get("http://localhost:3000/notifications")
+  const getNotifications = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/notifications");
+      setNotifications(res.data.data);
+    } catch (error) {
+      console.log("Error fetching notifications", error);
+    }
+  };
 
-setNotifications(res.data.data)
+  return (
+    <div style={{ padding: "30px" }}>
 
-}
+      <h2 style={{ marginBottom: "20px" }}>Notifications</h2>
 
-useEffect(()=>{
-getNotifications()
-},[])
+      {notifications.length === 0 ? (
+        <p style={{ color: "gray" }}>No notifications available</p>
+      ) : (
+        notifications.map((notification) => (
+          <div
+            key={notification._id}
+            style={{
+              border: "1px solid #ddd",
+              padding: "15px",
+              borderRadius: "8px",
+              marginBottom: "12px",
+              backgroundColor: "#f9f9f9"
+            }}
+          >
 
-const addNotification = async(e)=>{
+            <p style={{ fontWeight: "bold", marginBottom: "5px" }}>
+              {notification.title}
+            </p>
 
-e.preventDefault()
+            <p style={{ margin: "0" }}>
+              {notification.body}
+            </p>
 
-await axios.post("http://localhost:3000/notifications",{
-message
-})
+            <small style={{ color: "gray" }}>
+              {notification.createdAt
+                ? new Date(notification.createdAt).toLocaleString()
+                : ""}
+            </small>
 
-toast.success("Notification added")
+          </div>
+        ))
+      )}
 
-setMessage("")
+    </div>
+  );
+};
 
-getNotifications()
-
-}
-
-const deleteNotification = async(id)=>{
-
-await axios.delete(`http://localhost:3000/notifications/${id}`)
-
-toast.success("Deleted")
-
-getNotifications()
-
-}
-
-return(
-
-<div className="p-10">
-
-<h1 className="text-3xl font-bold mb-6">Notifications</h1>
-
-<form onSubmit={addNotification} className="flex gap-4 mb-6">
-
-<input
-placeholder="Message"
-value={message}
-onChange={(e)=>setMessage(e.target.value)}
-className="border p-2 rounded"
-/>
-
-<button className="bg-indigo-600 text-white px-4 py-2 rounded">
-Send
-</button>
-
-</form>
-
-{notifications.map((n)=>(
-
-<div key={n._id} className="border p-4 mb-3 rounded">
-
-<p>{n.message}</p>
-
-<button
-onClick={()=>deleteNotification(n._id)}
-className="bg-red-500 text-white px-3 py-1 rounded mt-2"
->
-Delete
-</button>
-
-</div>
-
-))}
-
-</div>
-
-)
-
-}
+export default Notification;

@@ -23,7 +23,7 @@ const createRoom = async(req,res)=>{
 const getAllRooms = async(req,res)=>{
     try{
 
-        const rooms = await roomSchema.find()
+        const rooms = await roomSchema.find().populate("pgId")
 
         res.status(200).json({
             message:"rooms fetched..",
@@ -62,7 +62,9 @@ const getRoomsByPg = async(req,res)=>{
 const getRoomById = async(req,res)=>{
     try{
 
-        const room = await roomSchema.findById(req.params.id)
+        const room = await roomSchema
+        .findById(req.params.id)
+        .populate("pgId")
 
         res.status(200).json({
             message:"room fetched",
@@ -123,6 +125,32 @@ const deleteRoom = async(req,res)=>{
 
     }
 }
+// GET ROOMS BY LANDLORD
+const getRoomsByLandlord = async(req,res)=>{
+    try{
+
+        const rooms = await roomSchema.find()
+        .populate("pgId")
+
+        // filter using pg.landlordId
+        const filtered = rooms.filter(room =>
+            room.pgId?.landlordId?.toString() === req.params.landlordId
+        )
+
+        res.status(200).json({
+            message:"landlord rooms fetched",
+            data:filtered
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error fetching landlord rooms",
+            err:error
+        })
+
+    }
+}
 
 module.exports = {
 createRoom,
@@ -130,5 +158,6 @@ getAllRooms,
 getRoomsByPg,
 getRoomById,
 updateRoom,
-deleteRoom
+deleteRoom,
+getRoomsByLandlord
 }

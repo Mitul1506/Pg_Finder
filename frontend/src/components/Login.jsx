@@ -43,8 +43,12 @@ export default function Login() {
       toast.success("Login successful");
 
       if (user?.role === "admin") {
-        navigate("/AdminSideBar");
-      } else {
+        navigate("/AdminSideBar/dashboard");
+      }
+      else if (user?.role === "landlord") {
+        navigate("/landlord");
+      }
+      else {
         navigate("/");
       }
 

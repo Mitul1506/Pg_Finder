@@ -1,168 +1,140 @@
-const bookingModel = require("../models/BookingModel")
-const roomModel = require("../models/RoomModel")
-const userModel = require("../models/UserModel") 
-
+const Booking = require("../models/BookingModel")
+const Room = require("../models/RoomModel")
 
 // CREATE BOOKING
-const createBooking = async (req, res) => {
+const createBooking = async(req,res)=>{
 
-try {
+try{
 
-const { roomId, tenantId } = req.body
+const {userId,pgId,roomId} = req.body
 
-// VALIDATION
-if(!roomId || !tenantId){
-return res.status(400).json({
-message:"roomId and tenantId are required"
-})
-}
-
-// CHECK ROOM
-const room = await roomModel.findById(roomId)
+const room = await Room.findById(roomId)
 
 if(!room){
-return res.status(404).json({
-message:"Room not found"
-})
+return res.status(404).json({message:"Room not found"})
 }
 
-// CHECK BED AVAILABILITY
 if(room.availableBeds <= 0){
-return res.status(400).json({
-message:"No beds available"
-})
+return res.status(400).json({message:"Room full"})
 }
 
-// CREATE BOOKING
-const booking = await bookingModel.create({
-roomId: room._id,
-tenantId: tenantId,
-pgId: room.pgId
+const booking = await Booking.create({
+userId,
+pgId,
+roomId
 })
 
-// REDUCE BED COUNT
 room.availableBeds = room.availableBeds - 1
 await room.save()
 
 res.status(201).json({
-message:"Room booked successfully",
-data: booking
+message:"Room booked",
+data:booking
 })
 
-} catch(err){
+}catch(err){
 
-console.log("BOOKING ERROR:", err)
+console.log(err)
 
 res.status(500).json({
-message:"Booking failed",
-error:err.message
+message:"Booking failed"
 })
 
 }
 
 }
+// GET USER BOOKINGS
+const getUserBookings = async(req,res)=>{
 
+    try{
 
-// GET ALL BOOKINGS (ADMIN PURPOSE)
-const getAllBookings = async (req, res) => {
+        const bookings = await Booking.find({userId:req.params.userId})
+        .populate("pgId")
+        .populate("roomId")
 
-try {
+        res.json({
+            message:"Bookings fetched",
+            data:bookings
+        })
 
-const bookings = await bookingModel
-.find()
-.populate("pgId")
-.populate("roomId")
-.populate("tenantId")
+    }catch(err){
 
-res.status(200).json({
-message: "All bookings fetched",
-data: bookings
-})
-
-} catch (err) {
-
-res.status(500).json({
-message: "Error fetching bookings",
-error: err.message
-})
+        res.status(500).json({
+            message:"Error fetching bookings",
+            error:err.message
+        })
+    }
 
 }
-
-}
-
-
-
-// GET BOOKINGS BY USER
-const getBookingsByUser = async (req, res) => {
-
-try {
-
-const bookings = await bookingModel
-.find({ tenantId: req.params.userId })
-.populate("pgId")
-.populate("roomId")
-
-res.status(200).json({
-message: "User bookings fetched",
-data: bookings
-})
-
-} catch (err) {
-
-res.status(500).json({
-message: "Error fetching user bookings",
-error: err.message
-})
-
-}
-
-}
-
 
 
 // CANCEL BOOKING
-const cancelBooking = async (req, res) => {
+const cancelBooking = async(req,res)=>{
 
-try {
+try{
 
-const booking = await bookingModel.findById(req.params.id)
+const booking = await Booking.findById(req.params.id)
 
-if (!booking) {
-return res.status(404).json({
-message: "Booking not found"
-})
+if(!booking){
+return res.status(404).json({message:"Booking not found"})
 }
 
-// FIND ROOM
-const room = await roomModel.findById(booking.roomId)
+// ❗ prevent multiple cancel
+if(booking.status === "cancelled"){
+return res.status(400).json({message:"Already cancelled"})
+}
 
-if (room) {
-room.availableBeds = room.availableBeds + 1
+const room = await Room.findById(booking.roomId)
+
+room.availableBeds += 1
 await room.save()
-}
 
-// DELETE BOOKING
-await bookingModel.findByIdAndDelete(req.params.id)
+booking.status = "cancelled"
+await booking.save()
 
-res.status(200).json({
-message: "Booking cancelled successfully"
+res.json({
+message:"Booking cancelled"
 })
 
-} catch (err) {
+}catch(err){
 
 res.status(500).json({
-message: "Error cancelling booking",
-error: err.message
+message:"Error cancelling booking"
 })
 
 }
 
 }
+// GET BOOKINGS FOR LANDLORD
+const getBookingsByLandlord = async(req,res)=>{
+    try{
 
+        const bookings = await Booking.find()
+        .populate("roomId")
+        .populate("pgId")
+        .populate("userId")
 
+        const filtered = bookings.filter(b =>
+            b.pgId?.landlordId?.toString() === req.params.landlordId
+        )
+
+        res.status(200).json({
+            message:"landlord bookings fetched",
+            data:filtered
+        })
+
+    }catch(err){
+
+        res.status(500).json({
+            message:"Error fetching landlord bookings",
+            error:err.message
+        })
+
+    }
+}
 module.exports = {
-createBooking,
-getAllBookings,
-getBookingsByUser,
-cancelBooking
+    createBooking,
+    getUserBookings,
+    cancelBooking,
+    getBookingsByLandlord
 }

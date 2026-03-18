@@ -101,11 +101,34 @@ const deletePg = async(req,res)=>{
 
     }
 }
+// GET PGs BY LANDLORD
+const getPgsByLandlord = async(req,res)=>{
+    try{
+
+        const pgs = await pgSchema.find({
+            landlordId:req.params.landlordId
+        })
+
+        res.status(200).json({
+            message:"landlord pgs fetched",
+            data:pgs
+        })
+
+    }catch(error){
+
+        res.status(500).json({
+            message:"error fetching landlord pgs",
+            err:error
+        })
+
+    }
+}
 
 module.exports={
 createPg,
 getAllPgs,
 getPgById,
 updatePg,
-deletePg
+deletePg,
+getPgsByLandlord
 }

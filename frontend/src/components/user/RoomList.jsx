@@ -9,19 +9,6 @@ const [rooms,setRooms] = useState([])
 const { pgId } = useParams()
 const navigate = useNavigate()
 
-const handleBooking = (roomId) => {
-
-const user = JSON.parse(localStorage.getItem("user"))
-
-if(!user){
-toast.error("Please login to book a room")
-navigate("/login")
-return
-}
-
-navigate(`/booking/${roomId}`)
-
-}
 // GET ROOMS OF PARTICULAR PG
 const getRooms = async()=>{
 
@@ -42,30 +29,6 @@ toast.error("Failed to load rooms")
 useEffect(()=>{
 getRooms()
 },[])
-
-
-// BOOK ROOM
-const bookRoom = async(roomId)=>{
-
-try{
-
-const user = JSON.parse(localStorage.getItem("user"))
-
-await axios.post("http://localhost:3000/bookings",{
-roomId:roomId,
-tenantId:user._id
-})
-
-toast.success("Room booked successfully")
-
-}catch(err){
-
-toast.error("Booking failed")
-
-}
-
-}
-
 
 return(
 
@@ -131,21 +94,14 @@ className="bg-gray-200 text-xs px-2 py-1 rounded"
 
 </div>
 
-{/* BUTTONS */}
-<div className="flex gap-3 mt-4">
+{/* BUTTON */}
+<div className="mt-4">
 
 <button
 onClick={()=>navigate(`/room/${room._id}`)}
-className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-800"
+className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
 >
 View Details
-</button>
-
-<button
-onClick={()=>handleBooking(room._id)}
-className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
->
-Book Now
 </button>
 
 </div>

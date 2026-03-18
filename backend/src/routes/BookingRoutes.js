@@ -1,18 +1,19 @@
 const router = require("express").Router()
 
 const {
-createBooking,
-getAllBookings,
-getBookingsByUser,
-cancelBooking
+    createBooking,
+    getUserBookings,
+    cancelBooking,
+    getBookingsByLandlord
 } = require("../controllers/BookingController")
 
+// CREATE BOOKING
 router.post("/", createBooking)
 
-router.get("/", getAllBookings)
+// GET USER BOOKINGS
+router.get("/user/:userId", getUserBookings)
 
-router.get("/user/:userId", getBookingsByUser)
-
-router.delete("/:id", cancelBooking)
-
+// CANCEL BOOKING
+router.put("/cancel/:id", cancelBooking)
+router.get("/landlord/:landlordId", getBookingsByLandlord)
 module.exports = router
