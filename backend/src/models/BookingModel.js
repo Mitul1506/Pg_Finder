@@ -37,6 +37,7 @@ const bookingSchema = new Schema({
         enum:["pending","paid"],
         default:"pending"
     }
+    
 
 })
 

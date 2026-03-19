@@ -1,214 +1,288 @@
-import React, { useEffect, useState } from "react"
-import axios from "axios"
-import { toast } from "react-toastify"
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
-export default function Landlord(){
+export default function Landlord() {
+  const [activeTab, setActiveTab] = useState("dashboard");
 
-const [pgs,setPgs] = useState([])
-const [rooms,setRooms] = useState([])
-const [bookings,setBookings] = useState([])
-const [loading,setLoading] = useState(true)
+  const [pgs, setPgs] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-const user = JSON.parse(localStorage.getItem("user"))
+  const [formData, setFormData] = useState({
+    pgName: "",
+    description: "",
+    pgType: "Boys",
+    availabilityStatus: "Available",
+    address: { area: "", city: "", state: "", pincode: "" },
+    amenities: "",
+    rules: "",
+    photos: "",
+    priceRange: { min: "", max: "" },
+  });
 
-// BASE URL (change if needed)
-const BASE_URL = "http://localhost:3000"
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
+  const BASE_URL = "http://localhost:3000";
 
-// FETCH ALL DATA
-const fetchData = async()=>{
-    try{
+  // ================= LOGOUT =================
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    toast.success("Logged out successfully 👋");
+    navigate("/login");
+  };
 
-        const [pgRes,roomRes,bookingRes] = await Promise.all([
+  // ================= FETCH =================
+  const fetchData = async () => {
+    try {
+      const [pgRes, roomRes, bookingRes] = await Promise.all([
+        axios.get(`${BASE_URL}/pgs/landlord/${user.id}`),
+        axios.get(`${BASE_URL}/rooms/landlord/${user.id}`),
+        axios.get(`${BASE_URL}/bookings/landlord/${user.id}`),
+      ]);
 
-            axios.get(`${BASE_URL}/pgs/landlord/${user.id}`),
-            axios.get(`${BASE_URL}/rooms/landlord/${user.id}`),
-            axios.get(`${BASE_URL}/bookings/landlord/${user.id}`)
-
-        ])
-
-        setPgs(pgRes.data.data || [])
-        setRooms(roomRes.data.data || [])
-        setBookings(bookingRes.data.data || [])
-
-    }catch(err){
-        console.log(err)
-        toast.error("Failed to load landlord data")
-    }finally{
-        setLoading(false)
+      setPgs(pgRes.data.data || []);
+      setRooms(roomRes.data.data || []);
+      setBookings(bookingRes.data.data || []);
+    } catch (err) {
+      toast.error("Failed to load data");
+    } finally {
+      setLoading(false);
     }
-}
+  };
 
-useEffect(()=>{
-    if(user){
-        fetchData()
+  useEffect(() => {
+    if (user) fetchData();
+  }, []);
+
+  // ================= HANDLE CHANGE =================
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (["area", "city", "state", "pincode"].includes(name)) {
+      setFormData({
+        ...formData,
+        address: { ...formData.address, [name]: value },
+      });
+    } else if (["min", "max"].includes(name)) {
+      setFormData({
+        ...formData,
+        priceRange: { ...formData.priceRange, [name]: value },
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
     }
-},[])
+  };
 
-if(!user){
-    return <h2 className="text-center mt-20 text-xl">Please login first</h2>
-}
+  // ================= ADD PG =================
+  const handleAddPg = async (e) => {
+    e.preventDefault();
 
-if(loading){
-    return <h2 className="text-center mt-20 text-xl">Loading Dashboard...</h2>
-}
+    try {
+      await axios.post(`${BASE_URL}/pgs`, {
+        ...formData,
+        landlordId: user.id,
+        amenities: formData.amenities.split(","),
+        rules: formData.rules.split(","),
+        photos: formData.photos.split(","),
+      });
 
-return(
+      toast.success("PG Added Successfully 🚀");
 
-<div className="pt-24 px-6 bg-gray-100 min-h-screen">
+      setFormData({
+        pgName: "",
+        description: "",
+        pgType: "Boys",
+        availabilityStatus: "Available",
+        address: { area: "", city: "", state: "", pincode: "" },
+        amenities: "",
+        rules: "",
+        photos: "",
+        priceRange: { min: "", max: "" },
+      });
 
-<h1 className="text-4xl font-bold mb-8 text-indigo-700">
-🏠 Landlord Dashboard
-</h1>
+      fetchData();
+      setActiveTab("pgs");
+    } catch (err) {
+      toast.error("Error adding PG");
+    }
+  };
 
-{/* 🔥 STATS */}
-<div className="grid md:grid-cols-3 gap-6 mb-10">
+  // ================= DELETE PG =================
+  const handleDeletePg = async (id) => {
+    try {
+      await axios.delete(`${BASE_URL}/pgs/${id}`);
+      toast.success("PG Deleted ❌");
+      fetchData();
+    } catch (err) {
+      toast.error("Delete failed");
+    }
+  };
 
-<div className="bg-white p-6 rounded-xl shadow">
-<h2 className="text-lg text-gray-600">Total PGs</h2>
-<p className="text-3xl font-bold text-indigo-600">{pgs.length}</p>
-</div>
+  // ================= AUTH CHECK =================
+  if (!user) {
+    return <h2 className="text-center mt-20 text-xl">Please login first</h2>;
+  }
 
-<div className="bg-white p-6 rounded-xl shadow">
-<h2 className="text-lg text-gray-600">Total Rooms</h2>
-<p className="text-3xl font-bold text-green-600">{rooms.length}</p>
-</div>
+  if (loading) {
+    return <h2 className="text-center mt-20 text-xl">Loading Dashboard...</h2>;
+  }
 
-<div className="bg-white p-6 rounded-xl shadow">
-<h2 className="text-lg text-gray-600">Total Bookings</h2>
-<p className="text-3xl font-bold text-orange-600">{bookings.length}</p>
-</div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100">
 
-</div>
+      {/* ================= NAVBAR ================= */}
+      <div className="bg-indigo-700 text-white flex justify-between items-center px-6 py-4 text-lg font-semibold shadow-md sticky top-0 z-50">
 
-{/* 🔥 PG LIST */}
-<div className="mb-10">
-<h2 className="text-2xl font-bold mb-4">Your PGs</h2>
+        <div className="flex gap-6">
+          <button
+            onClick={() => setActiveTab("dashboard")}
+            className={activeTab === "dashboard" ? "underline text-yellow-300" : ""}
+          >
+            Dashboard
+          </button>
 
-<div className="grid md:grid-cols-3 gap-6">
+          <button
+            onClick={() => setActiveTab("add")}
+            className={activeTab === "add" ? "underline text-yellow-300" : ""}
+          >
+            Add PG
+          </button>
 
-{pgs.length === 0 && <p>No PGs found</p>}
+          <button
+            onClick={() => setActiveTab("pgs")}
+            className={activeTab === "pgs" ? "underline text-yellow-300" : ""}
+          >
+            Manage PGs
+          </button>
 
-{pgs.map(pg=>(
-<div key={pg._id} className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition">
+          <button
+            onClick={() => setActiveTab("bookings")}
+            className={activeTab === "bookings" ? "underline text-yellow-300" : ""}
+          >
+            Bookings
+          </button>
+        </div>
 
-<h3 className="text-xl font-semibold text-indigo-700">
-{pg.pgName}
-</h3>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 px-4 py-1 rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+      </div>
 
-<p className="text-gray-600 mt-2">
-{pg.description}
-</p>
+      {/* ================= CONTENT ================= */}
+      <div className="p-6">
 
-<p className="text-sm text-gray-500 mt-2">
-Type: {pg.pgType}
-</p>
+        {/* DASHBOARD */}
+        {activeTab === "dashboard" && (
+          <>
+            <h1 className="text-3xl font-bold mb-6 text-center text-indigo-800">
+              📊 Dashboard Overview
+            </h1>
 
-<p className="text-sm text-gray-500">
-Status: {pg.availabilityStatus}
-</p>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-xl shadow text-center">
+                <p>Total PGs</p>
+                <h2 className="text-3xl font-bold text-indigo-600">{pgs.length}</h2>
+              </div>
 
-</div>
-))}
+              <div className="bg-white p-6 rounded-xl shadow text-center">
+                <p>Rooms</p>
+                <h2 className="text-3xl font-bold text-green-600">{rooms.length}</h2>
+              </div>
 
-</div>
-</div>
+              <div className="bg-white p-6 rounded-xl shadow text-center">
+                <p>Bookings</p>
+                <h2 className="text-3xl font-bold text-orange-600">{bookings.length}</h2>
+              </div>
+            </div>
+          </>
+        )}
 
-{/* 🔥 ROOM LIST */}
-<div className="mb-10">
-<h2 className="text-2xl font-bold mb-4">Your Rooms</h2>
+        {/* ADD PG */}
+        {activeTab === "add" && (
+          <div className="bg-white p-8 rounded-xl shadow-lg max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6 text-indigo-700">➕ Add New PG</h2>
 
-<div className="grid md:grid-cols-3 gap-6">
+            <form onSubmit={handleAddPg} className="grid md:grid-cols-2 gap-4">
 
-{rooms.length === 0 && <p>No Rooms found</p>}
+              <input name="pgName" placeholder="PG Name" value={formData.pgName} onChange={handleChange} className="p-3 border rounded-lg" required />
+              <input name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="p-3 border rounded-lg" required />
 
-{rooms.map(room=>(
-<div key={room._id} className="bg-white p-5 rounded-xl shadow">
+              <input name="city" placeholder="City" onChange={handleChange} className="p-3 border rounded-lg" />
+              <input name="area" placeholder="Area" onChange={handleChange} className="p-3 border rounded-lg" />
 
-<h3 className="text-lg font-semibold">
-{room.roomType}
-</h3>
+              <input name="min" type="number" placeholder="Min Price" onChange={handleChange} className="p-3 border rounded-lg" />
+              <input name="max" type="number" placeholder="Max Price" onChange={handleChange} className="p-3 border rounded-lg" />
 
-<p className="text-gray-600">
-PG: {room.pgId?.pgName}
-</p>
+              <input name="amenities" placeholder="Amenities" onChange={handleChange} className="p-3 border rounded-lg col-span-2" />
+              <input name="rules" placeholder="Rules" onChange={handleChange} className="p-3 border rounded-lg col-span-2" />
+              <input name="photos" placeholder="Photo URLs" onChange={handleChange} className="p-3 border rounded-lg col-span-2" />
 
-<p className="text-gray-600">
-Beds: {room.availableBeds}/{room.totalBeds}
-</p>
+              <button className="bg-indigo-600 text-white p-3 rounded-lg col-span-2 hover:bg-indigo-700">
+                Add PG 🚀
+              </button>
+            </form>
+          </div>
+        )}
 
-<p className="text-gray-600">
-Rent: ₹ {room.monthlyRent}
-</p>
+        {/* MANAGE PGS */}
+        {activeTab === "pgs" && (
+          <div className="grid md:grid-cols-3 gap-6">
+            {pgs.map((pg) => (
+              <div key={pg._id} className="bg-white p-5 rounded-xl shadow hover:shadow-xl">
 
-</div>
-))}
+                <img
+                  src={pg.photos?.[0] || "https://via.placeholder.com/300"}
+                  className="h-40 w-full object-cover rounded-lg mb-3"
+                />
 
-</div>
-</div>
+                <h3 className="text-xl font-semibold text-indigo-700">{pg.pgName}</h3>
+                <p className="text-sm">{pg.address?.city}</p>
 
-{/* 🔥 BOOKINGS LIST */}
-<div>
-<h2 className="text-2xl font-bold mb-4">Recent Bookings</h2>
+                <button
+                  onClick={() => handleDeletePg(pg._id)}
+                  className="mt-3 bg-red-500 text-white px-3 py-1 rounded w-full"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-<div className="bg-white rounded-xl shadow overflow-x-auto">
+        {/* BOOKINGS */}
+        {activeTab === "bookings" && (
+          <div className="bg-white rounded-xl shadow overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-indigo-600 text-white">
+                <tr>
+                  <th className="p-3">User</th>
+                  <th className="p-3">PG</th>
+                  <th className="p-3">Room</th>
+                  <th className="p-3">Status</th>
+                </tr>
+              </thead>
 
-<table className="w-full">
+              <tbody>
+                {bookings.map((b) => (
+                  <tr key={b._id} className="border-b text-center">
+                    <td className="p-3">{b.userId?.firstName}</td>
+                    <td className="p-3">{b.pgId?.pgName}</td>
+                    <td className="p-3">{b.roomId?.roomType}</td>
+                    <td className="p-3">{b.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-<thead className="bg-indigo-600 text-white">
-<tr>
-<th className="p-3 text-left">User</th>
-<th className="p-3 text-left">PG</th>
-<th className="p-3 text-left">Room</th>
-<th className="p-3 text-left">Status</th>
-</tr>
-</thead>
-
-<tbody>
-
-{bookings.length === 0 && (
-<tr>
-<td colSpan="4" className="text-center p-4">
-No bookings found
-</td>
-</tr>
-)}
-
-{bookings.map(b=>(
-<tr key={b._id} className="border-b">
-
-<td className="p-3">
-{b.userId?.firstName} {b.userId?.lastName}
-</td>
-
-<td className="p-3">
-{b.pgId?.pgName}
-</td>
-
-<td className="p-3">
-{b.roomId?.roomType}
-</td>
-
-<td className="p-3">
-<span className={`px-3 py-1 rounded-full text-sm ${
-b.status === "confirmed"
-? "bg-green-100 text-green-600"
-: "bg-yellow-100 text-yellow-600"
-}`}>
-{b.status}
-</span>
-</td>
-
-</tr>
-))}
-
-</tbody>
-
-</table>
-
-</div>
-</div>
-
-</div>
-
-)
+      </div>
+    </div>
+  );
 }

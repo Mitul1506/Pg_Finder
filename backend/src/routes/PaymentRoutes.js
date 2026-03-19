@@ -1,4 +1,5 @@
 const router = require("express").Router()
+const validateToken = require("../middleware/AuthMiddleware")
 
 const {
 createPayment,

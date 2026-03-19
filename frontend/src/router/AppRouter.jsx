@@ -23,6 +23,7 @@ import Pgs from "../components/admin/Pgs";
 import Rooms from "../components/admin/Rooms";
 import ReviewSection from "../components/user/ReviewSection";
 import Landlord from "../components/landlords/Landlord";
+import Bookings from "../components/admin/BookingsAdmin";
 
 
 const router = createBrowserRouter([
@@ -80,7 +81,8 @@ const router = createBrowserRouter([
 
       { path: "pgs", element: <Pgs /> },
 
-       { path: "rooms", element: <Rooms /> }
+       { path: "rooms", element: <Rooms /> },
+       { path: "bookingsadmin", element: <Bookings /> }
 
     ]
   },
