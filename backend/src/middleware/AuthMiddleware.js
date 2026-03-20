@@ -1,48 +1,44 @@
 const jwt = require("jsonwebtoken")
-const secret = "secret"
 
-const validateToken = async(req,res,next)=>{
+const secret = "secret" // ⚠️ same as used in UserController
 
-    try{
+const validateToken = async (req, res, next) => {
+  try {
 
-        const token = req.headers.authorization
-        console.log(token)
-        if(token){
-            //token Bearer
-            if(token.startsWith("Bearer ")){
+    const authHeader = req.headers.authorization
 
-                //remove Bearer from token
-
-                const tokenValue = token.split(" ")[1]
-                //verifytoken using jwt
-                const decodedData = jwt.verify(tokenValue,secret)
-                console.log(decodedData)
-                next()
-
-
-
-
-            }else{
-                res.status(401).json({
-                    message:"token is not Bearer token"
-                })
-            }
-
-        }
-        else{
-            res.status(401).json({
-                message:"token is not present.."
-            })
-        }
-        
-
-
-    }catch(err){
-        console.log(err)
-        res.status(500).json({
-            message:"error while validating token",
-            err:err
-        })
+    // ❌ No token
+    if (!authHeader) {
+      return res.status(401).json({
+        message: "Token not present"
+      })
     }
+
+    // ❌ Not Bearer format
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        message: "Token must be Bearer"
+      })
+    }
+
+    // ✅ Extract token
+    const token = authHeader.split(" ")[1]
+
+    // ✅ Verify token
+    const decodedData = jwt.verify(token, secret)
+
+    // 🔥 IMPORTANT: attach user data
+    req.user = decodedData
+
+    next()
+
+  } catch (err) {
+    console.log("Auth Error:", err)
+
+    return res.status(401).json({
+      message: "Invalid or expired token"
+    })
+  }
 }
+
 module.exports = validateToken

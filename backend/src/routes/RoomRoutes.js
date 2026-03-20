@@ -1,31 +1,37 @@
 const router = require("express").Router()
 
+const validateToken = require("../middleware/AuthMiddleware") // ✅ add middleware
+
 const {
-createRoom,
-getAllRooms,
-getRoomById,
-updateRoom,
-deleteRoom,
-getRoomsByPg,
-getRoomsByLandlord
+  createRoom,
+  getAllRooms,
+  getRoomById,
+  updateRoom,
+  deleteRoom,
+  getRoomsByPg,
+  getRoomsByLandlord
 } = require("../controllers/RoomController")
 
-// CREATE ROOM
-router.post("/",createRoom)
+// ================= CREATE ROOM =================
+router.post("/", validateToken, createRoom) // 🔐 protected
 
-// READ
-router.get("/",getAllRooms)
+// ================= GET ALL ROOMS =================
+router.get("/", getAllRooms) // ✅ public
 
-// GET ROOMS BY PG
-router.get("/pg/:pgId",getRoomsByPg)
+// ================= GET ROOMS BY PG =================
+router.get("/pg/:pgId", getRoomsByPg) // ✅ public
 
-router.get("/:id",getRoomById)
+// ================= GET ROOMS BY LANDLORD =================
+// ⚠️ place BEFORE /:id
+router.get("/landlord/:landlordId", validateToken, getRoomsByLandlord)
 
-// UPDATE
-router.put("/:id",updateRoom)
+// ================= GET ROOM BY ID =================
+router.get("/:id", getRoomById) // ✅ public
 
-// DELETE
-router.delete("/:id",deleteRoom)
-router.get("/landlord/:landlordId", getRoomsByLandlord)
+// ================= UPDATE ROOM =================
+router.put("/:id", validateToken, updateRoom) // 🔐 protected
+
+// ================= DELETE ROOM =================
+router.delete("/:id", validateToken, deleteRoom) // 🔐 protected
 
 module.exports = router

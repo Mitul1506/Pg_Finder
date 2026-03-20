@@ -2,17 +2,15 @@ const userSchema = require("../models/UserModel")
 const bcrypt = require("bcrypt")
 const mailSend = require("../utils/MailUtil")
 const User = require("../models/UserModel")
-// const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken") // ✅ ADDED
 
+const SECRET = "secret" // ⚠️ same as middleware
 
-
+// ================= REGISTER =================
 const registerUser = async (req, res) => {
-
   try {
-
     const { firstName, lastName, email, password, role } = req.body
 
-    // Check if user already exists
     const existingUser = await userSchema.findOne({ email })
 
     if (existingUser) {
@@ -21,15 +19,13 @@ const registerUser = async (req, res) => {
       })
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user
     const savedUser = await userSchema.create({
       firstName,
       lastName,
       email,
-      role, // ✅ added role
+      role,
       password: hashedPassword
     })
 
@@ -47,24 +43,21 @@ const registerUser = async (req, res) => {
         lastName: savedUser.lastName,
         email: savedUser.email,
         phone: savedUser.phone,
-        role: savedUser.role // ✅ optional but useful
+        role: savedUser.role
       }
     })
 
   } catch (err) {
-
     res.status(500).json({
       message: "Error while creating user",
       error: err.message
     })
-
   }
-
 }
 
+// ================= LOGIN =================
 const loginUser = async (req, res) => {
   try {
-
     const { email, password } = req.body
 
     const user = await userSchema.findOne({ email })
@@ -82,15 +75,17 @@ const loginUser = async (req, res) => {
         message: "Invalid password"
       })
     }
-    // const token = jwt.sign(
-    //         { id:user._id, role:user.role },
-    //         process.env.JWT_SECRET,
-    //         { expiresIn:"1d" }
-    //     )
+
+    // ✅ GENERATE TOKEN
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      SECRET,
+      { expiresIn: "1d" }
+    )
 
     res.status(200).json({
       message: "Login successful",
-      // token,
+      token, // ✅ ADDED
       user: {
         id: user._id,
         firstName: user.firstName,
@@ -101,19 +96,16 @@ const loginUser = async (req, res) => {
     })
 
   } catch (error) {
-
     res.status(500).json({
       message: "Login error",
       error: error.message
     })
-
   }
 }
-// GET ALL USERS
+
+// ================= GET ALL USERS =================
 const getAllUsers = async (req, res) => {
-
   try {
-
     const users = await User.find()
 
     res.status(200).json({
@@ -122,22 +114,16 @@ const getAllUsers = async (req, res) => {
     })
 
   } catch (error) {
-
     res.status(500).json({
       message: "Error fetching users",
       error: error.message
     })
-
   }
-
 }
 
-
-// GET USER BY ID
+// ================= GET USER BY ID =================
 const getUserById = async (req, res) => {
-
   try {
-
     const user = await User.findById(req.params.id)
 
     if (!user) {
@@ -152,19 +138,16 @@ const getUserById = async (req, res) => {
     })
 
   } catch (error) {
-
     res.status(500).json({
       message: "Error fetching user",
       error: error.message
     })
-
   }
-
 }
+
+// ================= DELETE USER =================
 const deleteUser = async (req, res) => {
-
   try {
-
     const { id } = req.params
 
     const deletedUser = await userSchema.findByIdAndDelete(id)
@@ -181,16 +164,12 @@ const deleteUser = async (req, res) => {
     })
 
   } catch (err) {
-
     res.status(500).json({
       message: "Error deleting user",
       error: err.message
     })
-
   }
-
 }
-
 
 module.exports = {
   registerUser,

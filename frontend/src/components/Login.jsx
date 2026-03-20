@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // ✅ added useEffect
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
@@ -15,57 +15,67 @@ export default function Login() {
     formState: { errors }
   } = useForm();
 
-  const submitHandler = async (data) => {
-  try {
-
-    setLoading(true);
-
-    const res = await axios.post(
-      "http://localhost:3000/user/login",
-      data
-    );
-
-    if (res.status === 200) {
-
-      const user = res.data.user;
-      const token = res.data.token;
-
-      // Save user
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
-
-      // Update axios header
+  // ✅ IMPORTANT: Set token if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      // 🔥 Notify navbar that user changed
-      window.dispatchEvent(new Event("userChanged"));
-
-      toast.success("Login successful");
-
-      if (user?.role === "admin") {
-        navigate("/AdminSideBar/dashboard");
-      }
-      else if (user?.role === "landlord") {
-        navigate("/landlord");
-      }
-      else {
-        navigate("/");
-      }
-
     }
+  }, []);
 
-  } catch (err) {
+  const submitHandler = async (data) => {
+    try {
 
-    if (err.response?.data?.message) {
-      toast.error(err.response.data.message);
-    } else {
-      toast.error("Login failed");
+      setLoading(true);
+
+      const res = await axios.post(
+        "http://localhost:3000/user/login",
+        data
+      );
+
+      if (res.status === 200) {
+
+        const user = res.data.user;
+        const token = res.data.token;
+
+        // ✅ Save user & token
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
+
+        // ✅ Set token globally
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+        // 🔥 Notify navbar
+        window.dispatchEvent(new Event("userChanged"));
+
+        toast.success("Login successful");
+
+        // ✅ ROLE BASED REDIRECT
+        if (user?.role === "admin") {
+          navigate("/AdminSideBar/dashboard");
+        }
+        else if (user?.role === "landlord") {
+          navigate("/landlord");
+        }
+        else {
+          navigate("/");
+        }
+
+      }
+
+    } catch (err) {
+
+      if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Login failed");
+      }
+
+    } finally {
+      setLoading(false);
     }
+  };
 
-  } finally {
-    setLoading(false);
-  }
-};
   return (
     <div className="min-h-screen bg-gray-200 flex items-center justify-center p-6">
 
