@@ -25,6 +25,7 @@ import ReviewSection from "../components/user/ReviewSection";
 import Landlord from "../components/landlords/Landlord";
 import Bookings from "../components/admin/BookingsAdmin";
 
+import ProtectedRoutes from "../components/ProtectedRoutes"; // ✅ ADD
 
 const router = createBrowserRouter([
 
@@ -39,54 +40,77 @@ const router = createBrowserRouter([
     children: [
 
       { index: true, element: <Home /> },
-
       { path: "home", element: <Home /> },
-
       { path: "pg-list", element: <PgList /> },
-
       { path: "roomlist/:pgId", element: <RoomList /> },
-
       { path: "room/:id", element: <RoomDetails /> },
 
-     
+      // 🔐 protected user routes (optional but good)
+      {
+        path: "mybookings",
+        element: (
+          <ProtectedRoutes userRoles={["user"]}>
+            <MyBookings />
+          </ProtectedRoutes>
+        )
+      },
 
-      { path: "mybookings", element: <MyBookings /> },
+      {
+        path: "notification",
+        element: (
+          <ProtectedRoutes userRoles={["user"]}>
+            <Notification />
+          </ProtectedRoutes>
+        )
+      },
 
-      { path: "notification", element: <Notification /> },
-
-      { path: "profile", element: <Profile /> },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoutes userRoles={["user"]}>
+            <Profile />
+          </ProtectedRoutes>
+        )
+      },
 
       { path: "reviews", element: <ReviewSection /> },
-
       { path: "message", element: <Message /> },
-
       { path: "getapidemo1", element: <GetApiDemo /> }
 
     ],
   },
 
-
   /* ================= ADMIN ROUTES ================= */
 
   {
     path: "/adminsidebar",
-    element: <AdminSideBar />,
+    element: (
+      <ProtectedRoutes userRoles={["admin"]}>
+        <AdminSideBar />
+      </ProtectedRoutes>
+    ),
     children: [
 
       { path: "dashboard", element: <Dashboard /> },
-
       { path: "users", element: <Users /> },
-
       { path: "landlords", element: <Landlords /> },
-
       { path: "pgs", element: <Pgs /> },
-
-       { path: "rooms", element: <Rooms /> },
-       { path: "bookingsadmin", element: <Bookings /> }
+      { path: "rooms", element: <Rooms /> },
+      { path: "bookingsadmin", element: <Bookings /> }
 
     ]
   },
-  { path: "/landlord", element: <Landlord /> }
+
+  /* ================= LANDLORD ROUTE ================= */
+
+  {
+    path: "/landlord",
+    element: (
+      <ProtectedRoutes userRoles={["landlord"]}>
+        <Landlord />
+      </ProtectedRoutes>
+    )
+  }
 
 ]);
 

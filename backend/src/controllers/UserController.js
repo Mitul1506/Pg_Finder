@@ -76,16 +76,16 @@ const loginUser = async (req, res) => {
       })
     }
 
-    // ✅ GENERATE TOKEN
+    
     const token = jwt.sign(
       { id: user._id, role: user.role },
       SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "30d" }
     )
 
     res.status(200).json({
       message: "Login successful",
-      token, // ✅ ADDED
+      token, 
       user: {
         id: user._id,
         firstName: user.firstName,

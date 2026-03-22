@@ -13,25 +13,25 @@ const {
 } = require("../controllers/RoomController")
 
 // ================= CREATE ROOM =================
-router.post("/", validateToken, createRoom) // 🔐 protected
+router.post("/", validateToken, createRoom)
 
 // ================= GET ALL ROOMS =================
-router.get("/", getAllRooms) // ✅ public
+router.get("/", getAllRooms) 
 
 // ================= GET ROOMS BY PG =================
-router.get("/pg/:pgId", getRoomsByPg) // ✅ public
+router.get("/pg/:pgId", getRoomsByPg)
 
 // ================= GET ROOMS BY LANDLORD =================
 // ⚠️ place BEFORE /:id
 router.get("/landlord/:landlordId", validateToken, getRoomsByLandlord)
 
 // ================= GET ROOM BY ID =================
-router.get("/:id", getRoomById) // ✅ public
+router.get("/:id", getRoomById) 
 
 // ================= UPDATE ROOM =================
-router.put("/:id", validateToken, updateRoom) // 🔐 protected
+router.put("/:id", validateToken, updateRoom) 
 
 // ================= DELETE ROOM =================
-router.delete("/:id", validateToken, deleteRoom) // 🔐 protected
+router.delete("/:id", validateToken, deleteRoom) 
 
 module.exports = router

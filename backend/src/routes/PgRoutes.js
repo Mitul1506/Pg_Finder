@@ -1,6 +1,7 @@
 const router = require("express").Router()
 
-const validateToken = require("../middleware/AuthMiddleware") // ✅ add middleware
+const validateToken = require("../middleware/AuthMiddleware")
+const roleMiddleware = require("../middleware/roleMiddleware")
 
 const {
   createPg,
@@ -8,26 +9,54 @@ const {
   getPgById,
   updatePg,
   deletePg,
-  getPgsByLandlord
+  getPgsByLandlord,
+  updateMultiplePgs
 } = require("../controllers/PgController")
 
+// ================= BULK UPDATE (PUT FIRST 🔥) =================
+router.put(
+  "/update-multiple",
+  validateToken,
+  roleMiddleware(["admin", "landlord"]),
+  updateMultiplePgs
+)
+
 // ================= CREATE PG =================
-router.post("/", validateToken, createPg) // 🔐 protected
+router.post(
+  "/",
+  validateToken,
+  roleMiddleware(["landlord"]),
+  createPg
+)
 
 // ================= GET ALL PGs =================
-router.get("/", getAllPgs) // ✅ public (users can browse)
+router.get("/", getAllPgs)
 
 // ================= LANDLORD PGs =================
-// ⚠️ must come BEFORE /:id
-router.get("/landlord/:landlordId", validateToken, getPgsByLandlord)
+router.get(
+  "/landlord/:landlordId",
+  validateToken,
+  roleMiddleware(["landlord"]),
+  getPgsByLandlord
+)
 
 // ================= GET PG BY ID =================
-router.get("/:id", getPgById) // ✅ public
+router.get("/:id", getPgById)
 
-// ================= UPDATE PG =================
-router.put("/:id", validateToken, updatePg) // 🔐 protected
+// ================= UPDATE SINGLE PG =================
+router.put(
+  "/:id",
+  validateToken,
+  roleMiddleware(["landlord"]),
+  updatePg
+)
 
 // ================= DELETE PG =================
-router.delete("/:id", validateToken, deletePg) // 🔐 protected
+router.delete(
+  "/:id",
+  validateToken,
+  roleMiddleware(["landlord", "admin"]),
+  deletePg
+)
 
 module.exports = router

@@ -82,7 +82,36 @@ const updatePg = async(req,res)=>{
 
     }
 }
+const updateMultiplePgs = async (req, res) => {
+  try {
 
+    const updates = req.body.pgs; // ✅ important change
+
+    const results = [];
+
+    for (let pg of updates) {
+      const updated = await pgSchema.findByIdAndUpdate(
+        pg._id,
+        { photos: pg.photos },
+        { new: true }
+      );
+
+      results.push(updated);
+    }
+
+    res.status(200).json({
+      message: "All PGs updated",
+      data: results
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "error updating pg",
+      err: error.message
+    });
+  }
+};
 const deletePg = async(req,res)=>{
     try{
 
@@ -130,5 +159,6 @@ getAllPgs,
 getPgById,
 updatePg,
 deletePg,
-getPgsByLandlord
+getPgsByLandlord,
+updateMultiplePgs
 }

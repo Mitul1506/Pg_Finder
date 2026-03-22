@@ -124,7 +124,7 @@ const UserNavBar = () => {
                     </Link>
 
                     <Link
-                      to="/bookings"
+                      to="/mybookings"
                       className="block px-4 py-2 hover:bg-gray-100"
                     >
                       📖 My Bookings
