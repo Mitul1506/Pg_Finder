@@ -103,6 +103,97 @@ const loginUser = async (req, res) => {
   }
 }
 
+// ================= FORGOT PASSWORD =================
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required"
+      })
+    }
+
+    const user = await userSchema.findOne({ email })
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      })
+    }
+
+    // ✅ Generate token with only user ID
+    const token = jwt.sign(
+      { id: user._id },
+      SECRET,
+      { expiresIn: "15m" }
+    )
+
+    // ✅ Reset link
+    const url = `http://localhost:5173/resetpassword/${token}`
+
+    const mailText = `
+      <h2>Password Reset</h2>
+      <p>Click below to reset your password:</p>
+      <a href="${url}">Reset Password</a>
+    `
+
+    await mailSend(user.email, "Reset Password Link", mailText)
+
+    res.status(200).json({
+      message: "Reset link sent to your email"
+    })
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Error sending reset link",
+      error: error.message
+    })
+  }
+}
+
+// ================= RESET PASSWORD =================
+const resetPassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+  const { token } = req.params;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        message: "Token and new password are required"
+      })
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters"
+      })
+    }
+
+    // ✅ Verify token
+    const decoded = jwt.verify(token, SECRET)
+
+    // ✅ Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+    // ✅ Update password
+    await userSchema.findByIdAndUpdate(decoded.id, {
+      password: hashedPassword
+    })
+
+    res.status(200).json({
+      message: "Password reset successfully"
+    })
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Invalid or expired token",
+      error: error.message
+    })
+  }
+}
+
+
 // ================= GET ALL USERS =================
 const getAllUsers = async (req, res) => {
   try {
@@ -176,5 +267,7 @@ module.exports = {
   loginUser,
   getAllUsers,
   getUserById,
-  deleteUser
+  deleteUser,
+  forgotPassword,
+  resetPassword
 }

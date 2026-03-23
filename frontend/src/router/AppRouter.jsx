@@ -26,11 +26,15 @@ import Landlord from "../components/landlords/Landlord";
 import Bookings from "../components/admin/BookingsAdmin";
 
 import ProtectedRoutes from "../components/ProtectedRoutes"; // ✅ ADD
+import { ForgotPassword } from "../components/ForgotPassword";
+import { ResetPassword } from "../components/ResetPassword";
 
 const router = createBrowserRouter([
 
   { path: "/login", element: <Login /> },
   { path: "/signup", element: <Signup /> },
+  {path: "/forgotpassword",element:<ForgotPassword/>},
+  {path: "/resetpassword/:token",element:<ResetPassword/>},
 
   /* ================= USER ROUTES ================= */
 

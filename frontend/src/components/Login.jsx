@@ -162,7 +162,12 @@ export default function Login() {
             </button>
 
             <p className="text-sm text-gray-500 mt-3 cursor-pointer hover:text-indigo-600">
-              Forgot password?
+              <Link
+    to="/forgotpassword"
+    className="cursor-pointer hover:text-indigo-600 hover:underline"
+  >
+    Forgot password?
+  </Link>
             </p>
 
             <p className="text-sm text-gray-500">
