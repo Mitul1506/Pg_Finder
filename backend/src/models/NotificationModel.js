@@ -25,6 +25,6 @@ const notificationSchema = new Schema({
         default:false
     }
 
-},{timestamps:true})   // 👈 ADD THIS
+},{timestamps:true})   
 
 module.exports = mongoose.model("notifications",notificationSchema)

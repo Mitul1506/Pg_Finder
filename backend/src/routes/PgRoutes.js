@@ -13,7 +13,7 @@ const {
   updateMultiplePgs
 } = require("../controllers/PgController")
 
-// ================= BULK UPDATE (PUT FIRST 🔥) =================
+
 router.put(
   "/update-multiple",
   validateToken,
@@ -21,7 +21,7 @@ router.put(
   updateMultiplePgs
 )
 
-// ================= CREATE PG =================
+
 router.post(
   "/",
   validateToken,
@@ -29,10 +29,10 @@ router.post(
   createPg
 )
 
-// ================= GET ALL PGs =================
+
 router.get("/", getAllPgs)
 
-// ================= LANDLORD PGs =================
+
 router.get(
   "/landlord/:landlordId",
   validateToken,
@@ -40,10 +40,10 @@ router.get(
   getPgsByLandlord
 )
 
-// ================= GET PG BY ID =================
+
 router.get("/:id", getPgById)
 
-// ================= UPDATE SINGLE PG =================
+
 router.put(
   "/:id",
   validateToken,
@@ -51,7 +51,7 @@ router.put(
   updatePg
 )
 
-// ================= DELETE PG =================
+
 router.delete(
   "/:id",
   validateToken,

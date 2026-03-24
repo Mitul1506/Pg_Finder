@@ -85,7 +85,7 @@ const updatePg = async(req,res)=>{
 const updateMultiplePgs = async (req, res) => {
   try {
 
-    const updates = req.body.pgs; // ✅ important change
+    const updates = req.body.pgs; 
 
     const results = [];
 

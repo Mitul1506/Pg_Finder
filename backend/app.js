@@ -1,10 +1,10 @@
 const express = require("express")
 const app = express()
 const cors = require("cors")
-//load env file.. using process
+
 require("dotenv").config()
 app.use(express.json())
-app.use(cors()) //allow all requests
+app.use(cors()) 
 
 const DBConnection = require("./src/utils/DBConnection")
 DBConnection()
@@ -41,4 +41,3 @@ const PORT = process.env.PORT
 app.listen(PORT,()=>{
     console.log(`server started on port ${PORT}`)
 })
-//server creation

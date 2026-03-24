@@ -2,29 +2,27 @@ const Review = require("../models/ReviewModel")
 const Booking = require("../models/BookingModel")
 const mongoose = require("mongoose")
 
-// ==============================
-// CREATE REVIEW (Only if booked)
-// ==============================
+
 const createReview = async (req, res) => {
     try {
 
         const { userId, pgId, rating, comment } = req.body
 
-        // 🔴 Validate input
+       
         if (!userId || !pgId || !rating || !comment) {
             return res.status(400).json({
                 message: "All fields are required"
             })
         }
 
-        // 🔴 Check rating range
+       
         if (rating < 1 || rating > 5) {
             return res.status(400).json({
                 message: "Rating must be between 1 to 5"
             })
         }
 
-        // ✅ Check if user booked this PG
+       
         const booking = await Booking.findOne({
             userId,
             pgId,
@@ -37,7 +35,7 @@ const createReview = async (req, res) => {
             })
         }
 
-        // ❌ Prevent duplicate review
+       
         const existingReview = await Review.findOne({ userId, pgId })
 
         if (existingReview) {
@@ -46,7 +44,7 @@ const createReview = async (req, res) => {
             })
         }
 
-        // ✅ Create review
+       
         const review = await Review.create({
             userId,
             pgId,
@@ -69,9 +67,7 @@ const createReview = async (req, res) => {
     }
 }
 
-// ==============================
-// GET REVIEWS BY PG
-// ==============================
+
 const getReviewsByPg = async (req, res) => {
     try {
 
@@ -94,9 +90,7 @@ const getReviewsByPg = async (req, res) => {
     }
 }
 
-// ==============================
-// GET AVERAGE RATING
-// ==============================
+
 const getAverageRating = async (req, res) => {
     try {
 
@@ -130,9 +124,7 @@ const getAverageRating = async (req, res) => {
     }
 }
 
-// ==============================
-// DELETE REVIEW
-// ==============================
+
 const deleteReview = async (req, res) => {
     try {
 
@@ -158,9 +150,7 @@ const deleteReview = async (req, res) => {
     }
 }
 
-// ==============================
-// UPDATE REVIEW (OPTIONAL)
-// ==============================
+
 const updateReview = async (req, res) => {
     try {
 
@@ -197,9 +187,7 @@ const updateReview = async (req, res) => {
     }
 }
 
-// ==============================
-// EXPORTS
-// ==============================
+
 module.exports = {
     createReview,
     getReviewsByPg,

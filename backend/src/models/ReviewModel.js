@@ -29,7 +29,7 @@ const reviewSchema = new Schema({
 
     isApproved:{
         type:Boolean,
-        default:true // auto approve (you can change later)
+        default:true 
     }
 
 },{timestamps:true})

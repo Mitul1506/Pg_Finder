@@ -2,7 +2,7 @@ const roleMiddleware = (roles) => {
   return (req, res, next) => {
     try {
 
-      const user = req.user // from token
+      const user = req.user 
 
       if (!user) {
         return res.status(401).json({

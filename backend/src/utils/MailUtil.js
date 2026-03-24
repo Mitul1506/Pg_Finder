@@ -14,10 +14,10 @@ const mailSend = async (to, subject, htmlContent) => {
     })
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,   // sender email
-      to: to,                         // receiver email
+      from: process.env.EMAIL_USER,   
+      to: to,                     
       subject: subject,
-      html: htmlContent               // 🔥 send HTML
+      html: htmlContent               
     }
 
     const mailResponse = await transporter.sendMail(mailOptions)

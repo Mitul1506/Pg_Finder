@@ -1,7 +1,7 @@
 const Booking = require("../models/BookingModel");
 const Room = require("../models/RoomModel");
 
-// ================= CREATE BOOKING =================
+
 const createBooking = async (req, res) => {
   try {
     const { userId, pgId, roomId } = req.body;
@@ -16,7 +16,7 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: "Room full" });
     }
 
-    // ❗ prevent duplicate booking
+    
     const existing = await Booking.findOne({
       userId,
       roomId,
@@ -49,7 +49,7 @@ const createBooking = async (req, res) => {
   }
 };
 
-// ================= GET USER BOOKINGS =================
+
 const getUserBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ userId: req.params.userId })
@@ -69,7 +69,7 @@ const getUserBookings = async (req, res) => {
   }
 };
 
-// ================= CANCEL BOOKING =================
+
 const cancelBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -84,7 +84,7 @@ const cancelBooking = async (req, res) => {
 
     const room = await Room.findById(booking.roomId);
 
-    // ❗ increase beds only if previously confirmed
+    
     if (booking.status === "confirmed") {
       room.availableBeds += 1;
       await room.save();
@@ -104,10 +104,10 @@ const cancelBooking = async (req, res) => {
   }
 };
 
-// ================= UPDATE STATUS (ADMIN / LANDLORD) =================
+
 const updateBookingStatus = async (req, res) => {
   try {
-    const { status } = req.body; // confirmed / cancelled
+    const { status } = req.body; 
 
     const booking = await Booking.findById(req.params.id);
 
@@ -117,20 +117,20 @@ const updateBookingStatus = async (req, res) => {
 
     const room = await Room.findById(booking.roomId);
 
-    // ===== CONFIRM BOOKING =====
+    
     if (status === "confirmed") {
       if (room.availableBeds <= 0) {
         return res.status(400).json({ message: "No beds available" });
       }
 
-      // only reduce if not already confirmed
+      
       if (booking.status !== "confirmed") {
         room.availableBeds -= 1;
         await room.save();
       }
     }
 
-    // ===== CANCEL BOOKING =====
+   
     if (status === "cancelled") {
       if (booking.status === "confirmed") {
         room.availableBeds += 1;
@@ -153,7 +153,7 @@ const updateBookingStatus = async (req, res) => {
   }
 };
 
-// ================= GET BOOKINGS FOR LANDLORD =================
+
 const getBookingsByLandlord = async (req, res) => {
   try {
     const bookings = await Booking.find()
@@ -214,5 +214,5 @@ module.exports = {
   getBookingsByLandlord,
   updateBookingStatus,
   deleteBooking ,
-  getAllBookings// ⭐ NEW
+  getAllBookings
 };

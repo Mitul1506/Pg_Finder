@@ -2,11 +2,11 @@ const userSchema = require("../models/UserModel")
 const bcrypt = require("bcrypt")
 const mailSend = require("../utils/MailUtil")
 const User = require("../models/UserModel")
-const jwt = require("jsonwebtoken") // ✅ ADDED
+const jwt = require("jsonwebtoken") 
 
-const SECRET = "secret" // ⚠️ same as middleware
+const SECRET = "secret" 
 
-// ================= REGISTER =================
+
 const registerUser = async (req, res) => {
   try {
     const { firstName, lastName, email, password, role } = req.body
@@ -55,7 +55,7 @@ const registerUser = async (req, res) => {
   }
 }
 
-// ================= LOGIN =================
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body
@@ -103,7 +103,7 @@ const loginUser = async (req, res) => {
   }
 }
 
-// ================= FORGOT PASSWORD =================
+
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body
@@ -122,14 +122,14 @@ const forgotPassword = async (req, res) => {
       })
     }
 
-    // ✅ Generate token with only user ID
+   
     const token = jwt.sign(
       { id: user._id },
       SECRET,
       { expiresIn: "15m" }
     )
 
-    // ✅ Reset link
+    
     const url = `http://localhost:5173/resetpassword/${token}`
 
     const mailText = `
@@ -152,7 +152,7 @@ const forgotPassword = async (req, res) => {
   }
 }
 
-// ================= RESET PASSWORD =================
+
 const resetPassword = async (req, res) => {
   try {
     const { newPassword } = req.body;
@@ -170,13 +170,13 @@ const resetPassword = async (req, res) => {
       })
     }
 
-    // ✅ Verify token
+  
     const decoded = jwt.verify(token, SECRET)
 
-    // ✅ Hash new password
+    
     const hashedPassword = await bcrypt.hash(newPassword, 10)
 
-    // ✅ Update password
+    
     await userSchema.findByIdAndUpdate(decoded.id, {
       password: hashedPassword
     })
@@ -194,7 +194,7 @@ const resetPassword = async (req, res) => {
 }
 
 
-// ================= GET ALL USERS =================
+
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find()
@@ -212,7 +212,7 @@ const getAllUsers = async (req, res) => {
   }
 }
 
-// ================= GET USER BY ID =================
+
 const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
@@ -236,7 +236,7 @@ const getUserById = async (req, res) => {
   }
 }
 
-// ================= DELETE USER =================
+
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params
@@ -261,6 +261,40 @@ const deleteUser = async (req, res) => {
     })
   }
 }
+const createLandlord = async (req, res) => {
+  try {
+    const { firstName, lastName, email, password } = req.body;
+
+    const existingUser = await userSchema.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const landlord = await userSchema.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      role: "landlord" // ✅ forced
+    });
+
+    res.status(201).json({
+      message: "Landlord created successfully",
+      data: landlord
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      message: "Error creating landlord",
+      error: err.message
+    });
+  }
+};
 
 module.exports = {
   registerUser,
@@ -269,5 +303,6 @@ module.exports = {
   getUserById,
   deleteUser,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  createLandlord
 }
