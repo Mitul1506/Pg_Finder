@@ -10,7 +10,7 @@ const disputeSchema = new Schema({
 
     raisedBy:{
         type:Schema.Types.ObjectId,
-        ref:"users"
+        ref:"user"
     },
 
     againstUserId:{
@@ -27,13 +27,15 @@ const disputeSchema = new Schema({
     },
 
     status:{
-        type:String
+        type:String,
+        enum:["pending","in-progress","resolved","rejected"],
+        default:"pending"
     },
 
     adminRemarks:{
         type:String
     }
 
-})
+},{timestamps:true})
 
-module.exports = mongoose.model("disputes",disputeSchema)
+module.exports = mongoose.model("dispute",disputeSchema)

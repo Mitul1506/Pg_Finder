@@ -5,7 +5,8 @@ createDispute,
 getAllDisputes,
 getDisputeById,
 updateDispute,
-deleteDispute
+deleteDispute,
+getDisputeByBookingId
 } = require("../controllers/DisputeController")
 
 
@@ -20,5 +21,6 @@ router.put("/:id",updateDispute)
 
 
 router.delete("/:id",deleteDispute)
+router.get("/booking/:bookingId", getDisputeByBookingId)
 
 module.exports = router

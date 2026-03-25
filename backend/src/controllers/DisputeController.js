@@ -23,7 +23,11 @@ const createDispute = async(req,res)=>{
 const getAllDisputes = async(req,res)=>{
     try{
 
-        const disputes = await disputeSchema.find()
+        const disputes = await disputeSchema
+        .find()
+        .populate("raisedBy","firstName email")
+        .populate("againstUserId","firstName email")
+        .populate("bookingId")
 
         res.status(200).json({
             message:"disputes fetched..",
@@ -32,9 +36,11 @@ const getAllDisputes = async(req,res)=>{
 
     }catch(error){
 
+        console.log(error) // 🔥 ADD THIS (VERY IMPORTANT)
+
         res.status(500).json({
             message:"error while fetching disputes",
-            err:error
+            err:error.message
         })
 
     }
@@ -101,11 +107,34 @@ const deleteDispute = async(req,res)=>{
 
     }
 }
+const getDisputeByBookingId = async (req, res) => {
+    try {
+
+        const dispute = await disputeSchema
+            .findOne({ bookingId: req.params.bookingId })
+            .populate("raisedBy", "firstName email")
+            .populate("againstUserId", "firstName email")
+
+        res.status(200).json({
+            message: "dispute fetched",
+            data: dispute
+        })
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: "error fetching dispute",
+            err: error.message
+        })
+
+    }
+}
 
 module.exports={
 createDispute,
 getAllDisputes,
 getDisputeById,
 updateDispute,
-deleteDispute
+deleteDispute,
+getDisputeByBookingId
 }
