@@ -3,108 +3,117 @@ import axios from "axios";
 
 const Landlords = () => {
 
-  const [landlords,setLandlords] = useState([])
-  const [filteredLandlords,setFilteredLandlords] = useState([])
-  const [search,setSearch] = useState("")
-  const [loading,setLoading] = useState(true)
+  const [landlords, setLandlords] = useState([]);
+  const [filteredLandlords, setFilteredLandlords] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  // NEW STATE FOR ADD FORM
-  const [formData,setFormData] = useState({
-    firstName:"",
-    lastName:"",
-    email:"",
-    password:""
-  })
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: ""
+  });
 
-  useEffect(()=>{
-    fetchLandlords()
-  },[])
+  useEffect(() => {
+    fetchLandlords();
+  }, []);
 
   // ================= FETCH =================
-  const fetchLandlords = async ()=>{
-    try{
-      const res = await axios.get("http://localhost:3000/user/users")
+  const fetchLandlords = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/user/users");
 
       const landlordUsers = res.data.data.filter(
-        (user)=> user.role === "landlord"
-      )
+        (user) => user.role === "landlord"
+      );
 
-      setLandlords(landlordUsers)
-      setFilteredLandlords(landlordUsers)
-      setLoading(false)
+      setLandlords(landlordUsers);
+      setFilteredLandlords(landlordUsers);
+      setLoading(false);
 
-    }catch(err){
-      console.log("Error fetching landlords",err)
-      setLoading(false)
+    } catch (err) {
+      console.log("Error fetching landlords", err);
+      setLoading(false);
     }
-  }
+  };
 
-  // ================= ADD LANDLORD =================
-  const handleAddLandlord = async(e)=>{
-    e.preventDefault()
+  // ================= ADD =================
+  const handleAddLandlord = async (e) => {
+    e.preventDefault();
 
-    try{
-
-      await axios.post("http://localhost:3000/user/register",{
+    try {
+      await axios.post("http://localhost:3000/user/register", {
         ...formData,
-        role:"landlord" // IMPORTANT
-      })
+        role: "landlord"
+      });
 
-      alert("Landlord added successfully ✅")
+      alert("Landlord added ✅");
 
       setFormData({
-        firstName:"",
-        lastName:"",
-        email:"",
-        password:""
-      })
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: ""
+      });
 
-      fetchLandlords()
+      fetchLandlords();
 
-    }catch(err){
-      console.log(err)
-      alert("Error adding landlord")
+    } catch (err) {
+      console.log(err);
+      alert("Error adding landlord");
     }
-  }
+  };
 
   // ================= DELETE =================
-  const deleteLandlord = async(id)=>{
-    if(!window.confirm("Delete this landlord?")) return
+  const deleteLandlord = async (id) => {
+    if (!window.confirm("Delete this landlord?")) return;
 
-    try{
-      await axios.delete(`http://localhost:3000/user/${id}`)
-      alert("Landlord deleted ❌")
-      fetchLandlords()
-    }catch(err){
-      console.log("Delete error",err)
+    try {
+      await axios.delete(`http://localhost:3000/user/${id}`);
+      fetchLandlords();
+    } catch (err) {
+      console.log(err);
     }
-  }
+  };
 
   // ================= SEARCH =================
-  const handleSearch = (value)=>{
-    setSearch(value)
+  const handleSearch = (value) => {
+    setSearch(value);
 
-    const filtered = landlords.filter((landlord)=>
-      landlord.firstName.toLowerCase().includes(value.toLowerCase()) ||
-      landlord.email.toLowerCase().includes(value.toLowerCase())
-    )
+    const filtered = landlords.filter((l) =>
+      l.firstName.toLowerCase().includes(value.toLowerCase()) ||
+      l.email.toLowerCase().includes(value.toLowerCase())
+    );
 
-    setFilteredLandlords(filtered)
-  }
+    setFilteredLandlords(filtered);
+  };
+
+  // 👤 initials
+  const getInitials = (u) => {
+    return (
+      (u.firstName?.charAt(0) || "") +
+      (u.lastName?.charAt(0) || "")
+    ).toUpperCase();
+  };
 
   return (
+    <div className="w-full">
 
-    <div className="ml-64 p-8 bg-gray-100 min-h-screen">
-
-      {/* TITLE */}
-      <h1 className="text-3xl font-bold mb-8">
-        Manage Landlords
-      </h1>
+      {/* HEADER */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">
+          Manage Landlords
+        </h1>
+        <p className="text-gray-500">
+          Add, search and manage landlords
+        </p>
+      </div>
 
       {/* ================= ADD FORM ================= */}
-      <div className="bg-white p-6 rounded-xl shadow mb-8">
+      <div className="bg-white p-6 rounded-2xl shadow-md border mb-8">
 
-        <h2 className="text-xl font-semibold mb-4 text-indigo-600">
+        <h2 className="text-lg font-semibold mb-4 text-indigo-600">
           ➕ Add New Landlord
         </h2>
 
@@ -118,7 +127,7 @@ const Landlords = () => {
             placeholder="First Name"
             value={formData.firstName}
             onChange={(e)=>setFormData({...formData,firstName:e.target.value})}
-            className="border p-2 rounded"
+            className="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-400"
             required
           />
 
@@ -127,7 +136,7 @@ const Landlords = () => {
             placeholder="Last Name"
             value={formData.lastName}
             onChange={(e)=>setFormData({...formData,lastName:e.target.value})}
-            className="border p-2 rounded"
+            className="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-400"
             required
           />
 
@@ -136,7 +145,7 @@ const Landlords = () => {
             placeholder="Email"
             value={formData.email}
             onChange={(e)=>setFormData({...formData,email:e.target.value})}
-            className="border p-2 rounded"
+            className="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-400"
             required
           />
 
@@ -145,13 +154,13 @@ const Landlords = () => {
             placeholder="Password"
             value={formData.password}
             onChange={(e)=>setFormData({...formData,password:e.target.value})}
-            className="border p-2 rounded"
+            className="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-400"
             required
           />
 
           <button
             type="submit"
-            className="col-span-2 bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700"
+            className="col-span-2 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
           >
             Add Landlord 🚀
           </button>
@@ -166,69 +175,87 @@ const Landlords = () => {
           placeholder="Search landlord..."
           value={search}
           onChange={(e)=>handleSearch(e.target.value)}
-          className="border p-2 rounded w-80"
+          className="border p-3 rounded-lg w-80 focus:ring-2 focus:ring-indigo-400"
         />
       </div>
 
       {/* ================= TABLE ================= */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-2xl shadow-md border overflow-hidden">
 
         {loading ? (
-          <p>Loading landlords...</p>
+          <div className="p-6 text-center text-gray-500">
+            Loading landlords...
+          </div>
         ) : (
 
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
 
-            <thead>
-              <tr className="border-b text-left">
-                <th className="py-3">Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              {filteredLandlords.map((landlord)=>(
-
-                <tr key={landlord._id} className="border-b hover:bg-gray-50">
-
-                  <td className="py-3">
-                    {landlord.firstName} {landlord.lastName}
-                  </td>
-
-                  <td>{landlord.email}</td>
-
-                  <td>
-                    <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded text-sm">
-                      {landlord.role}
-                    </span>
-                  </td>
-
-                  <td>
-                    <button
-                      onClick={()=>deleteLandlord(landlord._id)}
-                      className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td>
-
+              <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-4 text-left">User</th>
+                  <th className="px-6 py-4 text-left">Email</th>
+                  <th className="px-6 py-4 text-left">Role</th>
+                  <th className="px-6 py-4 text-right">Action</th>
                 </tr>
+              </thead>
 
-              ))}
+              <tbody className="divide-y">
 
-            </tbody>
+                {filteredLandlords.map((l) => (
 
-          </table>
+                  <tr key={l._id} className="hover:bg-gray-50">
+
+                    {/* USER */}
+                    <td className="px-6 py-4 flex items-center gap-3">
+
+                      <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold">
+                        {getInitials(l)}
+                      </div>
+
+                      <span className="font-medium text-gray-800">
+                        {l.firstName} {l.lastName}
+                      </span>
+
+                    </td>
+
+                    {/* EMAIL */}
+                    <td className="px-6 py-4 text-gray-600">
+                      {l.email}
+                    </td>
+
+                    {/* ROLE */}
+                    <td className="px-6 py-4">
+                      <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs">
+                        landlord
+                      </span>
+                    </td>
+
+                    {/* ACTION */}
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={()=>deleteLandlord(l._id)}
+                        className="bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </td>
+
+                  </tr>
+
+                ))}
+
+              </tbody>
+
+            </table>
+          </div>
 
         )}
 
       </div>
 
     </div>
-  )
-}
+  );
+};
 
-export default Landlords
+export default Landlords;

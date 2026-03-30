@@ -3,182 +3,168 @@ import axios from "axios";
 
 const Rooms = () => {
 
-  const [rooms,setRooms] = useState([])
-  const [filteredRooms,setFilteredRooms] = useState([])
-  const [search,setSearch] = useState("")
-  const [loading,setLoading] = useState(true)
+  const [rooms, setRooms] = useState([]);
+  const [filteredRooms, setFilteredRooms] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  useEffect(()=>{
+  useEffect(() => {
+    fetchRooms();
+  }, []);
 
-    fetchRooms()
+  const fetchRooms = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/rooms");
 
-  },[])
+      setRooms(res.data.data);
+      setFilteredRooms(res.data.data);
+      setLoading(false);
 
-
-  const fetchRooms = async ()=>{
-
-    try{
-
-      const res = await axios.get("http://localhost:3000/rooms")
-
-      setRooms(res.data.data)
-      setFilteredRooms(res.data.data)
-      setLoading(false)
-
-    }catch(err){
-
-      console.log("Room Fetch Error",err)
-      setLoading(false)
-
+    } catch (err) {
+      console.log("Room Fetch Error", err);
+      setLoading(false);
     }
+  };
 
-  }
+  const deleteRoom = async (id) => {
+    if (!window.confirm("Delete this room?")) return;
 
-
-  const deleteRoom = async(id)=>{
-
-    if(!window.confirm("Delete this room?")) return
-
-    try{
-
-      await axios.delete(`http://localhost:3000/rooms/${id}`)
-
-      alert("Room deleted")
-
-      fetchRooms()
-
-    }catch(err){
-
-      console.log("Delete Error",err)
-
+    try {
+      await axios.delete(`http://localhost:3000/rooms/${id}`);
+      fetchRooms();
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-  }
+  const handleSearch = (value) => {
+    setSearch(value);
 
-
-  const handleSearch = (value)=>{
-
-    setSearch(value)
-
-    const filtered = rooms.filter((room)=>
-
+    const filtered = rooms.filter((room) =>
       room.roomType?.toLowerCase().includes(value.toLowerCase()) ||
       room.pgId?.pgName?.toLowerCase().includes(value.toLowerCase())
+    );
 
-    )
-
-    setFilteredRooms(filtered)
-
-  }
-
-
+    setFilteredRooms(filtered);
+  };
 
   return (
+    <div className="w-full">
 
-    <div className="ml-64 p-8 bg-gray-100 min-h-screen">
-
-      {/* Title */}
-      <h1 className="text-3xl font-bold mb-8">
-        Manage Rooms
-      </h1>
-
-
-      {/* Search */}
-      <div className="mb-6">
-
-        <input
-          type="text"
-          placeholder="Search Room..."
-          value={search}
-          onChange={(e)=>handleSearch(e.target.value)}
-          className="border p-2 rounded w-80"
-        />
-
+      {/* HEADER */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">
+          Manage Rooms
+        </h1>
+        <p className="text-gray-500">
+          View and manage all room listings
+        </p>
       </div>
 
+      {/* SEARCH */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search by room type or PG..."
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="border p-3 rounded-lg w-80 focus:ring-2 focus:ring-indigo-400"
+        />
+      </div>
 
-      {/* Rooms Table */}
-      <div className="bg-white rounded-lg shadow p-6">
+      {/* TABLE */}
+      <div className="bg-white rounded-2xl shadow-md border overflow-hidden">
 
         {loading ? (
-
-          <p>Loading Rooms...</p>
-
+          <div className="p-6 text-center text-gray-500">
+            Loading Rooms...
+          </div>
         ) : (
 
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
 
-            <thead>
-
-              <tr className="border-b text-left">
-                <th className="py-3">PG Name</th>
-                <th>Room Type</th>
-                <th>Total Beds</th>
-                <th>Available Beds</th>
-                <th>Rent</th>
-                <th>Deposit</th>
-                <th>Action</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {filteredRooms.map((room)=>(
-
-                <tr key={room._id} className="border-b hover:bg-gray-50">
-
-                  <td className="py-3">
-                    {room.pgId?.pgName}
-                  </td>
-
-                  <td>
-                    {room.roomType}
-                  </td>
-
-                  <td>
-                    {room.totalBeds}
-                  </td>
-
-                  <td>
-                    {room.availableBeds}
-                  </td>
-
-                  <td>
-                    ₹ {room.monthlyRent}
-                  </td>
-
-                  <td>
-                    ₹ {room.deposit}
-                  </td>
-
-                  <td>
-
-                    <button
-                      onClick={()=>deleteRoom(room._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-
-                  </td>
-
+              {/* HEADER */}
+              <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-4 text-left">PG Name</th>
+                  <th className="px-6 py-4 text-left">Room Type</th>
+                  <th className="px-6 py-4 text-left">Total Beds</th>
+                  <th className="px-6 py-4 text-left">Available</th>
+                  <th className="px-6 py-4 text-left">Rent</th>
+                  <th className="px-6 py-4 text-left">Deposit</th>
+                  <th className="px-6 py-4 text-right">Action</th>
                 </tr>
+              </thead>
 
-              ))}
+              {/* BODY */}
+              <tbody className="divide-y">
 
-            </tbody>
+                {filteredRooms.map((room) => (
 
-          </table>
+                  <tr key={room._id} className="hover:bg-gray-50">
+
+                    {/* PG NAME */}
+                    <td className="px-6 py-4 font-medium text-gray-800">
+                      {room.pgId?.pgName}
+                    </td>
+
+                    {/* ROOM TYPE */}
+                    <td className="px-6 py-4 text-gray-600">
+                      {room.roomType}
+                    </td>
+
+                    {/* TOTAL BEDS */}
+                    <td className="px-6 py-4 text-gray-600">
+                      {room.totalBeds}
+                    </td>
+
+                    {/* AVAILABLE */}
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium
+                        ${room.availableBeds > 0
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-600"}`}
+                      >
+                        {room.availableBeds}
+                      </span>
+                    </td>
+
+                    {/* RENT */}
+                    <td className="px-6 py-4 text-gray-700 font-medium">
+                      ₹ {room.monthlyRent}
+                    </td>
+
+                    {/* DEPOSIT */}
+                    <td className="px-6 py-4 text-gray-600">
+                      ₹ {room.deposit}
+                    </td>
+
+                    {/* ACTION */}
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => deleteRoom(room._id)}
+                        className="bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </td>
+
+                  </tr>
+
+                ))}
+
+              </tbody>
+
+            </table>
+          </div>
 
         )}
 
       </div>
 
     </div>
+  );
+};
 
-  )
-
-}
-
-export default Rooms
+export default Rooms;

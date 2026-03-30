@@ -3,242 +3,177 @@ import axios from "axios";
 
 const Pgs = () => {
 
-  const [pgs,setPgs] = useState([])
-  const [filteredPgs,setFilteredPgs] = useState([])
-  const [search,setSearch] = useState("")
-  const [loading,setLoading] = useState(true)
+  const [pgs, setPgs] = useState([]);
+  const [filteredPgs, setFilteredPgs] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  useEffect(()=>{
+  useEffect(() => {
+    fetchPgs();
+  }, []);
 
-    fetchPgs()
+  const fetchPgs = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/pgs");
 
-  },[])
+      setPgs(res.data.data);
+      setFilteredPgs(res.data.data);
+      setLoading(false);
 
-
-  const fetchPgs = async ()=>{
-
-    try{
-
-      const res = await axios.get("http://localhost:3000/pgs")
-
-      setPgs(res.data.data)
-      setFilteredPgs(res.data.data)
-      setLoading(false)
-
-    }catch(err){
-
-      console.log("PG Fetch Error",err)
-      setLoading(false)
-
+    } catch (err) {
+      console.log("PG Fetch Error", err);
+      setLoading(false);
     }
+  };
 
-  }
+  // ================= DELETE =================
+  const deletePg = async (id) => {
+    if (!window.confirm("Delete this PG?")) return;
 
+    try {
+      await axios.delete(`http://localhost:3000/pgs/${id}`);
 
-  const deletePg = async(id)=>{
+      const updated = pgs.filter(pg => pg._id !== id);
+      setPgs(updated);
+      setFilteredPgs(updated);
 
-    if(!window.confirm("Delete this PG?")) return
-
-    try{
-
-      await axios.delete(`http://localhost:3000/pgs/${id}`)
-
-      alert("PG deleted")
-
-      fetchPgs()
-
-    }catch(err){
-
-      console.log("Delete Error",err)
-
+    } catch (err) {
+      console.log(err);
     }
+  };
 
-  }
+  // ================= SEARCH =================
+  const handleSearch = (value) => {
+    setSearch(value);
 
-
-  const approvePg = async(id)=>{
-
-    try{
-
-      await axios.put(`http://localhost:3000/pgs/${id}`,{
-        status:"approved"
-      })
-
-      alert("PG Approved")
-
-      fetchPgs()
-
-    }catch(err){
-
-      console.log("Approve Error",err)
-
-    }
-
-  }
-
-
-  const rejectPg = async(id)=>{
-
-    try{
-
-      await axios.put(`http://localhost:3000/pgs/${id}`,{
-        status:"rejected"
-      })
-
-      alert("PG Rejected")
-
-      fetchPgs()
-
-    }catch(err){
-
-      console.log("Reject Error",err)
-
-    }
-
-  }
-
-
-  const handleSearch = (value)=>{
-
-    setSearch(value)
-
-    const filtered = pgs.filter((pg)=>
-
-      pg.name?.toLowerCase().includes(value.toLowerCase()) ||
+    const filtered = pgs.filter((pg) =>
+      pg.pgName?.toLowerCase().includes(value.toLowerCase()) ||
       pg.address?.city?.toLowerCase().includes(value.toLowerCase()) ||
       pg.address?.area?.toLowerCase().includes(value.toLowerCase())
+    );
 
-    )
-
-    setFilteredPgs(filtered)
-
-  }
-
-
+    setFilteredPgs(filtered);
+  };
 
   return (
+    <div className="w-full">
 
-    <div className="ml-64 p-8 bg-gray-100 min-h-screen">
-
-      {/* Title */}
-      <h1 className="text-3xl font-bold mb-8">
-        Manage PGs
-      </h1>
-
-
-      {/* Search */}
-      <div className="mb-6">
-
-        <input
-          type="text"
-          placeholder="Search PG..."
-          value={search}
-          onChange={(e)=>handleSearch(e.target.value)}
-          className="border p-2 rounded w-80"
-        />
-
+      {/* HEADER */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">
+          Manage PGs
+        </h1>
+        <p className="text-gray-500">
+          View and manage all PG listings
+        </p>
       </div>
 
+      {/* SEARCH */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search PG by name, city or area..."
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="border p-3 rounded-lg w-80 focus:ring-2 focus:ring-indigo-400"
+        />
+      </div>
 
-      {/* PG Table */}
-      <div className="bg-white rounded-lg shadow p-6">
+      {/* TABLE */}
+      <div className="bg-white rounded-2xl shadow-md border overflow-hidden">
 
         {loading ? (
-
-          <p>Loading PGs...</p>
-
+          <div className="p-6 text-center text-gray-500">
+            Loading PGs...
+          </div>
+        ) : filteredPgs.length === 0 ? (
+          <div className="p-6 text-center text-gray-500">
+            No PGs found
+          </div>
         ) : (
 
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
 
-            <thead>
-
-              <tr className="border-b text-left">
-                <th className="py-3">PG Name</th>
-                <th>City</th>
-                <th>Area</th>
-                <th>Pincode</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {filteredPgs.map((pg)=>(
-
-                <tr key={pg._id} className="border-b hover:bg-gray-50">
-
-                  <td className="py-3">
-                    {pg.pgName}
-                  </td>
-
-                  <td>
-                    {pg.address?.city}
-                  </td>
-
-                  <td>
-                    {pg.address?.area}
-                  </td>
-
-                  <td>
-                    {pg.address?.pincode}
-                  </td>
-
-                  <td>
-
-                    <span className={`px-3 py-1 rounded text-sm
-                      ${pg.status === "approved" ? "bg-green-100 text-green-700" :
-                        pg.status === "rejected" ? "bg-red-100 text-red-600" :
-                        "bg-yellow-100 text-yellow-700"}`}
-                    >
-                      {pg.status || "pending"}
-                    </span>
-
-                  </td>
-
-                  <td className="space-x-2">
-
-                    <button
-                      onClick={()=>approvePg(pg._id)}
-                      className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                    >
-                      Approve
-                    </button>
-
-                    <button
-                      onClick={()=>rejectPg(pg._id)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                    >
-                      Reject
-                    </button>
-
-                    <button
-                      onClick={()=>deletePg(pg._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                    >
-                      Delete
-                    </button>
-
-                  </td>
-
+              {/* HEADER */}
+              <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-4 text-left">PG</th>
+                  <th className="px-6 py-4 text-left">City</th>
+                  <th className="px-6 py-4 text-left">Area</th>
+                  <th className="px-6 py-4 text-left">Pincode</th>
+                  <th className="px-6 py-4 text-left">Image</th>
+                  <th className="px-6 py-4 text-right">Action</th>
                 </tr>
+              </thead>
 
-              ))}
+              {/* BODY */}
+              <tbody className="divide-y">
 
-            </tbody>
+                {filteredPgs.map((pg) => (
 
-          </table>
+                  <tr key={pg._id} className="hover:bg-gray-50">
+
+                    {/* PG NAME */}
+                    <td className="px-6 py-4 font-medium text-gray-800">
+                      {pg.pgName}
+                    </td>
+
+                    {/* CITY */}
+                    <td className="px-6 py-4 text-gray-600">
+                      {pg.address?.city}
+                    </td>
+
+                    {/* AREA */}
+                    <td className="px-6 py-4 text-gray-600">
+                      {pg.address?.area}
+                    </td>
+
+                    {/* PINCODE */}
+                    <td className="px-6 py-4 text-gray-600">
+                      {pg.address?.pincode}
+                    </td>
+
+                    {/* IMAGE */}
+                    <td className="px-6 py-4">
+                      {pg.photos?.length > 0 ? (
+                        <img
+                          src={pg.photos[0]}
+                          alt="pg"
+                          className="w-16 h-12 object-cover rounded-md"
+                        />
+                      ) : (
+                        <span className="text-gray-400 text-xs">
+                          No Image
+                        </span>
+                      )}
+                    </td>
+
+                    {/* ACTION */}
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => deletePg(pg._id)}
+                        className="bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                    </td>
+
+                  </tr>
+
+                ))}
+
+              </tbody>
+
+            </table>
+          </div>
 
         )}
 
       </div>
 
     </div>
+  );
+};
 
-  )
-
-}
-
-export default Pgs
+export default Pgs;

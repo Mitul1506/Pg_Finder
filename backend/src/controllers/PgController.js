@@ -64,8 +64,8 @@ const updatePg = async(req,res)=>{
 
         const updatedPg = await pgSchema.findByIdAndUpdate(
             req.params.id,
-            req.body,
-            {new:true}
+            { $set: req.body }, // ✅ important
+            { new:true }
         )
 
         res.status(200).json({

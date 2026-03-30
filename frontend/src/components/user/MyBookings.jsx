@@ -7,7 +7,7 @@ export default function MyBookings(){
 const [bookings,setBookings] = useState([])
 const [loading,setLoading] = useState(true)
 
-// ✅ DISPUTE STATE
+
 const [disputes,setDisputes] = useState({})
 
 const [showModal,setShowModal] = useState(false)
@@ -25,7 +25,7 @@ const res = await axios.get(`http://localhost:3000/bookings/user/${userId}`)
 
 setBookings(res.data.data)
 
-// ✅ FETCH DISPUTES FOR EACH BOOKING
+
 const disputesData = {}
 
 for(let b of res.data.data){
@@ -42,7 +42,7 @@ setLoading(false)
 }
 }
 
-// ================= CANCEL =================
+
 const cancelBooking = async(id)=>{
 try{
 await axios.put(`http://localhost:3000/bookings/cancel/${id}`)
@@ -53,13 +53,13 @@ toast.error("Cancel failed")
 }
 }
 
-// ================= OPEN MODAL =================
+
 const openDisputeModal = (booking)=>{
 setSelectedBooking(booking)
 setShowModal(true)
 }
 
-// ================= SUBMIT DISPUTE =================
+
 const submitDispute = async()=>{
 try{
 
@@ -82,7 +82,7 @@ setShowModal(false)
 setIssueType("")
 setDescription("")
 
-getBookings() // ✅ refresh
+getBookings() 
 
 }catch(err){
 toast.error("Failed to raise dispute")
@@ -142,7 +142,7 @@ Cancel Booking
 </button>
 )}
 
-{/* ================= DISPUTE UI ================= */}
+
 
 {!dispute ? (
 

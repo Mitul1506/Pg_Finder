@@ -14,10 +14,8 @@ const user = JSON.parse(localStorage.getItem("user"))
 // ================== FETCH REVIEWS ==================
 const getReviews = async () => {
     try {
-
         const res = await axios.get(`http://localhost:3000/reviews/pg/${pgId}`)
         setReviews(res.data.data)
-
     } catch (err) {
         console.log(err)
     }
@@ -26,10 +24,8 @@ const getReviews = async () => {
 // ================== FETCH AVG ==================
 const getAvgRating = async () => {
     try {
-
         const res = await axios.get(`http://localhost:3000/reviews/avg/${pgId}`)
         setAvgRating(res.data.averageRating)
-
     } catch (err) {
         console.log(err)
     }
@@ -43,11 +39,10 @@ const submitReview = async () => {
     }
 
     try {
-
         await axios.post("http://localhost:3000/reviews", {
             userId: user._id || user.id,
             pgId,
-            rating,
+            rating: Number(rating), 
             comment
         })
 
@@ -69,78 +64,105 @@ useEffect(() => {
     getAvgRating()
 }, [pgId])
 
+// ⭐ Render stars
+const renderStars = (count) => {
+    return "⭐".repeat(count)
+}
+
+// 👤 initials
+const getInitials = (u) => {
+    const f = u?.firstName?.charAt(0)?.toUpperCase() || ""
+    const l = u?.lastName?.charAt(0)?.toUpperCase() || ""
+    return f + l
+}
+
 // ================== UI ==================
 return (
 
-<div className="mt-16">
+<div className="mt-16 max-w-4xl mx-auto">
 
-{/* TITLE */}
-<h2 className="text-2xl font-bold mb-4">
-Reviews & Ratings ⭐
-</h2>
+{/* HEADER */}
+<div className="flex items-center justify-between mb-6">
+    <h2 className="text-2xl font-bold">
+        Reviews & Ratings
+    </h2>
 
-{/* AVG RATING */}
-<p className="mb-4 text-lg font-semibold">
-Average Rating: {avgRating.toFixed(1)} ⭐
-</p>
+    <div className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-semibold">
+        ⭐ {avgRating.toFixed(1)}
+    </div>
+</div>
 
 {/* ADD REVIEW */}
-<div className="bg-white p-5 rounded shadow mb-8">
+<div className="bg-white p-6 rounded-2xl shadow-md mb-8">
 
-<h3 className="text-xl font-semibold mb-3">
-Add Review
+<h3 className="text-lg font-semibold mb-4">
+Add Your Review
 </h3>
 
-{/* RATING */}
-<select
-value={rating}
-onChange={(e)=>setRating(e.target.value)}
-className="border p-2 mb-3 w-full"
->
-<option value={5}>5 ⭐</option>
-<option value={4}>4 ⭐</option>
-<option value={3}>3 ⭐</option>
-<option value={2}>2 ⭐</option>
-<option value={1}>1 ⭐</option>
-</select>
+{/* ⭐ CLICKABLE STARS */}
+<div className="flex gap-2 mb-4 text-2xl cursor-pointer">
+    {[1,2,3,4,5].map((star)=>(
+        <span
+            key={star}
+            onClick={()=>setRating(star)}
+            className={`transition ${
+                star <= rating ? "text-yellow-400" : "text-gray-300"
+            } hover:scale-110`}
+        >
+            ★
+        </span>
+    ))}
+</div>
 
 {/* COMMENT */}
 <textarea
-placeholder="Write your review..."
+placeholder="Share your experience..."
 value={comment}
 onChange={(e)=>setComment(e.target.value)}
-className="border p-2 w-full mb-3"
+className="border rounded-lg p-3 w-full mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400"
 />
 
 <button
 onClick={submitReview}
-className="bg-blue-500 text-white px-4 py-2 rounded"
+className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
 >
 Submit Review
 </button>
 
 </div>
 
-{/* REVIEW LIST */}
+{/* REVIEWS LIST */}
 <div className="space-y-4">
 
 {reviews.length === 0 ? (
-<p>No reviews yet</p>
+    <div className="text-center text-gray-500 py-10">
+        No reviews yet 😔
+    </div>
 ) : (
 reviews.map((r)=>(
-<div key={r._id} className="bg-gray-100 p-4 rounded">
+<div key={r._id} className="bg-white p-5 rounded-xl shadow-sm border hover:shadow-md transition">
 
-<p className="font-semibold">
-{r.userId?.firstName} {r.userId?.lastName}
-</p>
+    <div className="flex items-center gap-3 mb-2">
 
-<p className="text-yellow-500">
-{"⭐".repeat(r.rating)}
-</p>
+        {/* Avatar */}
+        <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold">
+            {getInitials(r.userId)}
+        </div>
 
-<p className="text-gray-700">
-{r.comment}
-</p>
+        <div>
+            <p className="font-semibold text-gray-800">
+                {r.userId?.firstName} {r.userId?.lastName}
+            </p>
+
+            <p className="text-yellow-400 text-sm">
+                {renderStars(r.rating)}
+            </p>
+        </div>
+    </div>
+
+    <p className="text-gray-600 mt-2">
+        {r.comment}
+    </p>
 
 </div>
 ))

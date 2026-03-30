@@ -11,7 +11,7 @@ const reviewSchema = new Schema({
 
     pgId:{
         type:Schema.Types.ObjectId,
-        ref:"pgs",
+        ref:"pg",   // ✅ FIXED HERE
         required:true
     },
 
