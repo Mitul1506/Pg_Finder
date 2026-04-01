@@ -1,25 +1,14 @@
-const router = require("express").Router()
-const validateToken = require("../middleware/AuthMiddleware")
+const router = require("express").Router();
 
 const {
-createPayment,
-getAllPayments,
-getPaymentById,
-updatePayment,
-deletePayment
-} = require("../controllers/PaymentController")
+  createOrder,
+  verifyPayment
+} = require("../controllers/PaymentController");
 
+// CREATE ORDER
+router.post("/create-order", createOrder);
 
-router.post("/",createPayment)
+// VERIFY PAYMENT
+router.post("/verify-payment", verifyPayment);
 
-
-router.get("/",getAllPayments)
-router.get("/:id",getPaymentById)
-
-
-router.put("/:id",updatePayment)
-
-
-router.delete("/:id",deletePayment)
-
-module.exports = router
+module.exports = router;

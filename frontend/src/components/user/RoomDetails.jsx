@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import axios from "axios"
 import { useParams, useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
-import ReviewSection from "/src/components/user/ReviewSection"   // ✅ ADD THIS
+import ReviewSection from "/src/components/user/ReviewSection"
 
 export default function RoomDetails(){
 
@@ -12,74 +12,146 @@ const navigate = useNavigate()
 const [room,setRoom] = useState(null)
 const [loading,setLoading] = useState(false)
 
-// ================= GET ROOM =================
-const getRoom = async()=>{
-
-try{
-
-const res = await axios.get(`http://localhost:3000/rooms/${id}`)
-setRoom(res.data.data)
-
-}catch(err){
-
-toast.error("Failed to load room")
-
+// ================= LOAD RAZORPAY SCRIPT =================
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script")
+    script.src = "https://checkout.razorpay.com/v1/checkout.js"
+    script.onload = () => resolve(true)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
 }
 
+// ================= GET ROOM =================
+const getRoom = async()=>{
+  try{
+    const res = await axios.get(`http://localhost:3000/rooms/${id}`)
+    setRoom(res.data.data)
+  }catch(err){
+    toast.error("Failed to load room")
+  }
 }
 
 useEffect(()=>{
-getRoom()
+  getRoom()
 },[])
 
 
-// ================= BOOK ROOM =================
-const bookRoom = async()=>{
+// ================= HANDLE PAYMENT =================
+const handlePayment = async()=>{
 
 const user = JSON.parse(localStorage.getItem("user"))
+const token = localStorage.getItem("token")
 
 if(!user){
-toast.error("Please login first")
-navigate("/login")
-return
+  toast.error("Please login first")
+  navigate("/login")
+  return
 }
 
-// ❌ prevent booking if full
 if(room.availableBeds <= 0){
-toast.error("Room is already full")
-return
+  toast.error("Room is already full")
+  return
 }
 
 try{
 
 setLoading(true)
 
-await axios.post("http://localhost:3000/bookings",{
+// 1️⃣ LOAD RAZORPAY SDK
+const resScript = await loadRazorpay()
 
-userId:user._id || user.id,
-roomId:room._id,
-pgId:room.pgId?._id || room.pgId   // ✅ FIXED
+if(!resScript){
+  toast.error("Razorpay SDK failed to load")
+  return
+}
 
-})
+// 2️⃣ CREATE ORDER FROM BACKEND
+const orderRes = await axios.post(
+  "http://localhost:3000/payments/create-order",
+  {
+    amount: room.monthlyRent
+  }
+)
 
-toast.success("Room booked successfully ✅")
+const order = orderRes.data.data
 
-// update UI instantly
-setRoom(prev=>({
-...prev,
-availableBeds: prev.availableBeds - 1
-}))
+// 3️⃣ OPEN RAZORPAY
+const options = {
+  key: "rzp_test_SY8yaDx0SnQtTG", // 🔴 replace with your test key
+  amount: order.amount,
+  currency: "INR",
+  name: "PG Finder",
+  description: "Room Booking Payment",
+  order_id: order.id,
 
-// redirect
-setTimeout(()=>{
-navigate("/mybookings")
-},1000)
+  handler: async function (response) {
+
+    try{
+
+      // 4️⃣ VERIFY PAYMENT
+      const verifyRes = await axios.post(
+        "http://localhost:3000/payments/verify-payment",
+        {
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature
+        }
+      )
+
+      if(verifyRes.data.success){
+
+        // 5️⃣ CREATE BOOKING AFTER PAYMENT
+        await axios.post(
+          "http://localhost:3000/bookings",
+          {
+            userId: user._id || user.id,
+            roomId: room._id,
+            pgId: room.pgId?._id || room.pgId,
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id
+          },
+          {
+            headers:{
+              Authorization:`Bearer ${token}`
+            }
+          }
+        )
+
+        toast.success("Payment successful & Room booked 🎉")
+
+        setTimeout(()=>{
+          navigate("/mybookings")
+        },1000)
+
+      }else{
+        toast.error("Payment verification failed")
+      }
+
+    }catch(err){
+      toast.error("Error verifying payment")
+    }
+
+  },
+
+  prefill: {
+    name: user.firstName + " " + user.lastName,
+    email: user.email
+  },
+
+  theme: {
+    color: "#4f46e5"
+  }
+}
+
+const rzp = new window.Razorpay(options)
+rzp.open()
 
 }catch(err){
 
-console.log("Booking Error:",err.response?.data)
-
-toast.error(err.response?.data?.message || "Booking failed")
+console.log(err)
+toast.error("Payment failed")
 
 }finally{
 setLoading(false)
@@ -147,7 +219,7 @@ Room Amenities
 
 </div>
 
-{/* ✅ REVIEW SECTION ADDED HERE */}
+{/* REVIEW */}
 <div className="bg-white p-8 rounded-xl shadow">
 <ReviewSection pgId={room.pgId?._id || room.pgId} />
 </div>
@@ -173,7 +245,6 @@ Rent: <b>₹ {room.monthlyRent}</b>
 Deposit: <b>₹ {room.deposit}</b>
 </p>
 
-{/* STATUS */}
 {room.availableBeds === 0 && (
 <p className="text-red-600 font-semibold mb-3">
 Room Full ❌
@@ -181,7 +252,7 @@ Room Full ❌
 )}
 
 <button
-onClick={bookRoom}
+onClick={handlePayment}
 disabled={loading || room.availableBeds === 0}
 className={`w-full py-3 rounded-lg font-semibold transition ${
 room.availableBeds === 0
@@ -190,7 +261,7 @@ room.availableBeds === 0
 }`}
 >
 
-{loading ? "Booking..." : "Book This Room"}
+{loading ? "Processing..." : "Pay & Book Room"}
 
 </button>
 

@@ -130,7 +130,18 @@ Status:
 </span>
 </p>
 
-<p className="mb-3">Payment: {b.paymentStatus}</p>
+<p className="mb-3">
+Payment:
+<span className={`ml-2 font-semibold ${
+b.paymentStatus === "paid"
+? "text-green-600"
+: b.paymentStatus === "failed"
+? "text-red-500"
+: "text-yellow-500"
+}`}>
+{b.paymentStatus}
+</span>
+</p>
 
 {/* CANCEL */}
 {b.status !== "cancelled" && (

@@ -29,15 +29,24 @@ const bookingSchema = new Schema({
     status:{
         type:String,
         enum:["pending","confirmed","cancelled"],
-        default:"confirmed"
+        default:"pending"   // ✅ FIXED
     },
 
     paymentStatus:{
         type:String,
-        enum:["pending","paid"],
+        enum:["pending","paid","failed"],  // ✅ upgraded
         default:"pending"
+    },
+
+    paymentId:{   // ✅ NEW (Razorpay)
+        type:String,
+        default:null
+    },
+
+    orderId:{   // ✅ NEW (Razorpay)
+        type:String,
+        default:null
     }
-    
 
 })
 

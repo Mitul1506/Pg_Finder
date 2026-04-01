@@ -1,22 +1,24 @@
 const Booking = require("../models/BookingModel");
 const Room = require("../models/RoomModel");
 
-
+// ================= CREATE BOOKING =================
 const createBooking = async (req, res) => {
   try {
-    const { userId, pgId, roomId } = req.body;
+    const { userId, pgId, roomId, paymentId, orderId } = req.body;
 
+    // 🔍 1. Find Room
     const room = await Room.findById(roomId);
 
     if (!room) {
       return res.status(404).json({ message: "Room not found" });
     }
 
+    // ❌ 2. Check availability
     if (room.availableBeds <= 0) {
       return res.status(400).json({ message: "Room full" });
     }
 
-    
+    // ❌ 3. Prevent duplicate booking
     const existing = await Booking.findOne({
       userId,
       roomId,
@@ -29,15 +31,31 @@ const createBooking = async (req, res) => {
       });
     }
 
+    // 🎯 4. Decide status based on payment
+    const isPaid = !!paymentId;
+
+    const bookingStatus = isPaid ? "confirmed" : "pending";
+    const paymentStatus = isPaid ? "paid" : "pending";
+
+    // 💾 5. Create booking
     const booking = await Booking.create({
       userId,
       pgId,
       roomId,
-      status: "pending"
+      status: bookingStatus,
+      paymentStatus: paymentStatus,
+      paymentId: paymentId || null,
+      orderId: orderId || null
     });
 
+    // 🛏️ 6. Reduce beds ONLY if confirmed
+    if (bookingStatus === "confirmed") {
+      room.availableBeds -= 1;
+      await room.save();
+    }
+
     res.status(201).json({
-      message: "Booking request sent",
+      message: "Booking created successfully",
       data: booking
     });
 
@@ -49,13 +67,16 @@ const createBooking = async (req, res) => {
   }
 };
 
-
+// ================= GET USER BOOKINGS =================
 const getUserBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ userId: req.params.userId })
-      .populate("pgId")
-      .populate("roomId");
-
+    const bookings = await Booking.find({
+  userId: req.params.userId,
+  status: "confirmed",
+  paymentStatus: "paid"
+})
+  .populate("pgId")
+  .populate("roomId");
     res.json({
       message: "Bookings fetched",
       data: bookings
@@ -69,7 +90,7 @@ const getUserBookings = async (req, res) => {
   }
 };
 
-
+// ================= CANCEL =================
 const cancelBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -84,7 +105,6 @@ const cancelBooking = async (req, res) => {
 
     const room = await Room.findById(booking.roomId);
 
-    
     if (booking.status === "confirmed") {
       room.availableBeds += 1;
       await room.save();
@@ -104,10 +124,10 @@ const cancelBooking = async (req, res) => {
   }
 };
 
-
+// ================= UPDATE STATUS =================
 const updateBookingStatus = async (req, res) => {
   try {
-    const { status } = req.body; 
+    const { status } = req.body;
 
     const booking = await Booking.findById(req.params.id);
 
@@ -117,20 +137,17 @@ const updateBookingStatus = async (req, res) => {
 
     const room = await Room.findById(booking.roomId);
 
-    
     if (status === "confirmed") {
       if (room.availableBeds <= 0) {
         return res.status(400).json({ message: "No beds available" });
       }
 
-      
       if (booking.status !== "confirmed") {
         room.availableBeds -= 1;
         await room.save();
       }
     }
 
-   
     if (status === "cancelled") {
       if (booking.status === "confirmed") {
         room.availableBeds += 1;
@@ -153,7 +170,7 @@ const updateBookingStatus = async (req, res) => {
   }
 };
 
-
+// ================= LANDLORD BOOKINGS =================
 const getBookingsByLandlord = async (req, res) => {
   try {
     const bookings = await Booking.find()
@@ -178,15 +195,16 @@ const getBookingsByLandlord = async (req, res) => {
     });
   }
 };
+
 const deleteBooking = async (req, res) => {
   try {
     await Booking.findByIdAndDelete(req.params.id);
-
     res.json({ message: "Booking deleted" });
   } catch (err) {
     res.status(500).json({ message: "Error deleting booking" });
   }
 };
+
 const getAllBookings = async (req, res) => {
   try {
     const bookings = await Booking.find()
@@ -213,6 +231,6 @@ module.exports = {
   cancelBooking,
   getBookingsByLandlord,
   updateBookingStatus,
-  deleteBooking ,
+  deleteBooking,
   getAllBookings
 };

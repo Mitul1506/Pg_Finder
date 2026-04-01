@@ -12,17 +12,15 @@ export default function Bookings() {
 
   // ================= FETCH BOOKINGS =================
   const fetchBookings = async () => {
-  try {
-    const res = await axios.get(`${BASE_URL}/bookings`)
+    try {
+      const res = await axios.get(`${BASE_URL}/bookings`);
+      setBookings(res.data.data || []);
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to load bookings");
+    }
+  };
 
-    console.log("API RESPONSE 👉", res.data); // 👈 ADD THIS
-
-    setBookings(res.data.data || []);
-  } catch (err) {
-    console.log(err);
-    toast.error("Failed to load bookings");
-  }
-};
   useEffect(() => {
     if (user) fetchBookings();
   }, []);
@@ -38,17 +36,14 @@ export default function Bookings() {
     }
   };
 
-  // ================= STATUS UPDATE =================
-  const updateStatus = async (id, status) => {
+  // ================= CANCEL BOOKING =================
+  const cancelBooking = async (id) => {
     try {
-      await axios.put(`${BASE_URL}/bookings/status/${id}`, {
-        status,
-      });
-
-      toast.success(`Booking ${status}`);
+      await axios.put(`${BASE_URL}/bookings/cancel/${id}`);
+      toast.success("Booking cancelled");
       fetchBookings();
     } catch (err) {
-      toast.error("Status update failed");
+      toast.error("Cancel failed");
     }
   };
 
@@ -86,6 +81,8 @@ export default function Bookings() {
               <th className="p-3">Room</th>
               <th className="p-3">Date</th>
               <th className="p-3">Status</th>
+              <th className="p-3">Payment</th>
+              <th className="p-3">Payment ID</th>
               <th className="p-3">Action</th>
             </tr>
           </thead>
@@ -94,14 +91,21 @@ export default function Bookings() {
             {filteredBookings.map((b) => (
               <tr key={b._id} className="border-b text-center">
 
+                {/* USER */}
                 <td className="p-3">{b.userId?.firstName}</td>
+
+                {/* PG */}
                 <td className="p-3">{b.pgId?.pgName}</td>
+
+                {/* ROOM */}
                 <td className="p-3">{b.roomId?.roomType}</td>
 
+                {/* DATE */}
                 <td className="p-3">
                   {new Date(b.bookingDate).toLocaleDateString()}
                 </td>
 
+                {/* STATUS */}
                 <td className="p-3">
                   <span className={`px-3 py-1 rounded-full text-sm ${
                     b.status === "confirmed"
@@ -114,25 +118,43 @@ export default function Bookings() {
                   </span>
                 </td>
 
+                {/* PAYMENT STATUS */}
+                <td className="p-3">
+                  <span className={`px-3 py-1 rounded-full text-sm ${
+                    b.paymentStatus === "paid"
+                      ? "bg-green-100 text-green-600"
+                      : "bg-yellow-100 text-yellow-600"
+                  }`}>
+                    {b.paymentStatus}
+                  </span>
+                </td>
+
+                {/* PAYMENT ID */}
+                <td className="p-3 text-xs">
+                  {b.paymentId ? b.paymentId : "-"}
+                </td>
+
+                {/* ACTION */}
                 <td className="p-3 space-x-2">
 
-                  <button
-                    onClick={() => updateStatus(b._id, "confirmed")}
-                    className="bg-green-500 text-white px-2 py-1 rounded"
-                  >
-                    Approve
-                  </button>
+                  {/* CANCEL BUTTON (only if not cancelled) */}
+                  {b.status !== "cancelled" ? (
+                    <button
+                      onClick={() => cancelBooking(b._id)}
+                      className="bg-yellow-500 text-white px-3 py-1 rounded"
+                    >
+                      Cancel
+                    </button>
+                  ) : (
+                    <span className="text-gray-400 text-sm">
+                      No Action
+                    </span>
+                  )}
 
-                  <button
-                    onClick={() => updateStatus(b._id, "cancelled")}
-                    className="bg-yellow-500 text-white px-2 py-1 rounded"
-                  >
-                    Reject
-                  </button>
-
+                  {/* DELETE */}
                   <button
                     onClick={() => handleDelete(b._id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
+                    className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Delete
                   </button>
