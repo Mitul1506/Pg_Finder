@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import axios from "axios"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, useLocation } from "react-router-dom"
 import { toast } from "react-toastify"
 import ReviewSection from "/src/components/user/ReviewSection"
 
@@ -8,6 +8,7 @@ export default function RoomDetails(){
 
 const { id } = useParams()
 const navigate = useNavigate()
+const location = useLocation() // ✅ IMPORTANT
 
 const [room,setRoom] = useState(null)
 const [loading,setLoading] = useState(false)
@@ -44,9 +45,14 @@ const handlePayment = async()=>{
 const user = JSON.parse(localStorage.getItem("user"))
 const token = localStorage.getItem("token")
 
+// ✅ FIX: redirect with current path
 if(!user){
   toast.error("Please login first")
-  navigate("/login")
+  navigate("/login", {
+    state: {
+      from: location.pathname   // 🔥 store current page
+    }
+  })
   return
 }
 
@@ -67,7 +73,7 @@ if(!resScript){
   return
 }
 
-// 2️⃣ CREATE ORDER FROM BACKEND
+// 2️⃣ CREATE ORDER
 const orderRes = await axios.post(
   "http://localhost:3000/payments/create-order",
   {
@@ -79,7 +85,7 @@ const order = orderRes.data.data
 
 // 3️⃣ OPEN RAZORPAY
 const options = {
-  key: "rzp_test_SY8yaDx0SnQtTG", // 🔴 replace with your test key
+  key: "rzp_test_SY8yaDx0SnQtTG",
   amount: order.amount,
   currency: "INR",
   name: "PG Finder",
@@ -102,7 +108,7 @@ const options = {
 
       if(verifyRes.data.success){
 
-        // 5️⃣ CREATE BOOKING AFTER PAYMENT
+        // 5️⃣ CREATE BOOKING
         await axios.post(
           "http://localhost:3000/bookings",
           {

@@ -146,9 +146,7 @@ const UserNavBar = () => {
                       💳 Payments
                     </Link>
 
-                    <Link to="/reviews" className="block px-4 py-2 hover:bg-gray-100">
-                      ⭐ Reviews
-                    </Link>
+                    
 
                     <button
                       onClick={handleLogout}

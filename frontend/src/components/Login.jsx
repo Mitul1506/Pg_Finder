@@ -2,11 +2,12 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 export default function Login() {
 
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ IMPORTANT
   const [loading, setLoading] = useState(false);
 
   const {
@@ -15,7 +16,7 @@ export default function Login() {
     formState: { errors }
   } = useForm();
 
-  // SET TOKEN IF EXISTS
+  // ================= SET TOKEN =================
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -23,6 +24,7 @@ export default function Login() {
     }
   }, []);
 
+  // ================= LOGIN =================
   const submitHandler = async (data) => {
     try {
       setLoading(true);
@@ -37,6 +39,7 @@ export default function Login() {
         const user = res.data.user;
         const token = res.data.token;
 
+        // ✅ STORE DATA
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("token", token);
 
@@ -46,14 +49,23 @@ export default function Login() {
 
         toast.success("Login successful 🎉");
 
-        // ROLE BASED REDIRECT
-        if (user?.role === "admin") {
-          navigate("/AdminSideBar/dashboard");
-        } else if (user?.role === "landlord") {
-          navigate("/landlord");
+        // ================= REDIRECT LOGIC =================
+        const redirectPath = location.state?.from;
+
+        if (redirectPath) {
+          // ✅ Go back to previous page (RoomDetails etc.)
+          navigate(redirectPath);
         } else {
-          navigate("/");
+          // ✅ Role-based fallback
+          if (user?.role === "admin") {
+            navigate("/AdminSideBar/dashboard");
+          } else if (user?.role === "landlord") {
+            navigate("/landlord");
+          } else {
+            navigate("/");
+          }
         }
+
       }
 
     } catch (err) {

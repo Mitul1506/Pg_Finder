@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 export default function Landlord() {
 
   const [activeTab, setActiveTab] = useState("dashboard");
-
   const [pgs, setPgs] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -16,12 +15,9 @@ export default function Landlord() {
   const user = JSON.parse(localStorage.getItem("user"));
   const BASE_URL = "http://localhost:3000";
 
-  // ================= PG FORM =================
   const [formData, setFormData] = useState({
     pgName: "",
     description: "",
-    pgType: "Boys",
-    availabilityStatus: "Available",
     address: { area: "", city: "", state: "", pincode: "" },
     amenities: "",
     rules: "",
@@ -29,7 +25,6 @@ export default function Landlord() {
     priceRange: { min: "", max: "" },
   });
 
-  // ================= ROOM FORM =================
   const [roomForm, setRoomForm] = useState({
     pgId: "",
     roomType: "",
@@ -40,14 +35,12 @@ export default function Landlord() {
     roomAmenities: "",
   });
 
-  // ================= LOGOUT =================
   const handleLogout = () => {
     localStorage.removeItem("user");
-    toast.success("Logged out successfully 👋");
+    toast.success("Logged out 👋");
     navigate("/login");
   };
 
-  // ================= FETCH DATA =================
   const fetchData = async () => {
     try {
       const [pgRes, roomRes, bookingRes] = await Promise.all([
@@ -59,7 +52,7 @@ export default function Landlord() {
       setPgs(pgRes.data.data || []);
       setRooms(roomRes.data.data || []);
       setBookings(bookingRes.data.data || []);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load data");
     } finally {
       setLoading(false);
@@ -70,7 +63,6 @@ export default function Landlord() {
     if (user) fetchData();
   }, []);
 
-  // ================= HANDLE PG INPUT =================
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -89,10 +81,12 @@ export default function Landlord() {
     }
   };
 
-  // ================= ADD PG =================
+  const handleRoomChange = (e) => {
+    setRoomForm({ ...roomForm, [e.target.name]: e.target.value });
+  };
+
   const handleAddPg = async (e) => {
     e.preventDefault();
-
     try {
       await axios.post(`${BASE_URL}/pgs`, {
         ...formData,
@@ -102,48 +96,16 @@ export default function Landlord() {
         photos: formData.photos.split(","),
       });
 
-      toast.success("PG Added Successfully 🚀");
-
-      setFormData({
-        pgName: "",
-        description: "",
-        pgType: "Boys",
-        availabilityStatus: "Available",
-        address: { area: "", city: "", state: "", pincode: "" },
-        amenities: "",
-        rules: "",
-        photos: "",
-        priceRange: { min: "", max: "" },
-      });
-
+      toast.success("PG Added 🚀");
       fetchData();
       setActiveTab("pgs");
-    } catch (err) {
+    } catch {
       toast.error("Error adding PG");
     }
   };
 
-  // ================= DELETE PG =================
-  const handleDeletePg = async (id) => {
-    try {
-      await axios.delete(`${BASE_URL}/pgs/${id}`);
-      toast.success("PG Deleted ❌");
-      fetchData();
-    } catch {
-      toast.error("Delete failed");
-    }
-  };
-
-  // ================= HANDLE ROOM INPUT =================
-  const handleRoomChange = (e) => {
-    const { name, value } = e.target;
-    setRoomForm({ ...roomForm, [name]: value });
-  };
-
-  // ================= ADD ROOM =================
   const handleAddRoom = async (e) => {
     e.preventDefault();
-
     try {
       await axios.post(`${BASE_URL}/rooms`, {
         ...roomForm,
@@ -154,18 +116,7 @@ export default function Landlord() {
         roomAmenities: roomForm.roomAmenities.split(","),
       });
 
-      toast.success("Room Added Successfully 🛏️");
-
-      setRoomForm({
-        pgId: "",
-        roomType: "",
-        totalBeds: "",
-        availableBeds: "",
-        monthlyRent: "",
-        deposit: "",
-        roomAmenities: "",
-      });
-
+      toast.success("Room Added 🛏️");
       fetchData();
       setActiveTab("dashboard");
     } catch {
@@ -173,22 +124,25 @@ export default function Landlord() {
     }
   };
 
-  // ================= AUTH CHECK =================
-  if (!user) {
-    return <h2 className="text-center mt-20 text-xl">Please login first</h2>;
-  }
+  const handleDeletePg = async (id) => {
+    try {
+      await axios.delete(`${BASE_URL}/pgs/${id}`);
+      toast.success("Deleted");
+      fetchData();
+    } catch {
+      toast.error("Delete failed");
+    }
+  };
 
-  if (loading) {
-    return <h2 className="text-center mt-20 text-xl">Loading Dashboard...</h2>;
-  }
+  if (!user) return <h2 className="text-center mt-20">Login first</h2>;
+  if (loading) return <h2 className="text-center mt-20">Loading...</h2>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100">
+    <div className="min-h-screen bg-gray-100">
 
       {/* NAVBAR */}
-      <div className="bg-indigo-700 text-white flex justify-between items-center px-6 py-4 font-semibold">
-
-        <div className="flex gap-6">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 flex justify-between items-center shadow-lg sticky top-0 z-50">
+        <div className="flex gap-6 font-medium">
           <button onClick={() => setActiveTab("dashboard")}>Dashboard</button>
           <button onClick={() => setActiveTab("add")}>Add PG</button>
           <button onClick={() => setActiveTab("addRoom")}>Add Room</button>
@@ -196,7 +150,7 @@ export default function Landlord() {
           <button onClick={() => setActiveTab("bookings")}>Bookings</button>
         </div>
 
-        <button onClick={handleLogout} className="bg-red-500 px-4 py-1 rounded">
+        <button onClick={handleLogout} className="bg-red-500 px-4 py-1 rounded hover:bg-red-600">
           Logout
         </button>
       </div>
@@ -206,58 +160,48 @@ export default function Landlord() {
         {/* DASHBOARD */}
         {activeTab === "dashboard" && (
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded shadow text-center">
-              <h2>Total PGs</h2>
-              <p className="text-2xl">{pgs.length}</p>
-            </div>
-            <div className="bg-white p-6 rounded shadow text-center">
-              <h2>Rooms</h2>
-              <p className="text-2xl">{rooms.length}</p>
-            </div>
-            <div className="bg-white p-6 rounded shadow text-center">
-              <h2>Bookings</h2>
-              <p className="text-2xl">{bookings.length}</p>
-            </div>
+            {[{ title: "Total PGs", value: pgs.length },
+              { title: "Rooms", value: rooms.length },
+              { title: "Bookings", value: bookings.length }].map((card, i) => (
+              <div key={i} className="bg-white p-6 rounded-2xl shadow-md text-center hover:shadow-lg transition">
+                <h2 className="text-gray-500">{card.title}</h2>
+                <p className="text-3xl font-bold mt-2">{card.value}</p>
+              </div>
+            ))}
           </div>
         )}
 
         {/* ADD PG */}
         {activeTab === "add" && (
-          <form onSubmit={handleAddPg} className="grid md:grid-cols-2 gap-4 bg-white p-6 rounded shadow">
-            <input name="pgName" placeholder="PG Name" onChange={handleChange} required />
-            <input name="description" placeholder="Description" onChange={handleChange} />
-            <input name="city" placeholder="City" onChange={handleChange} />
-            <input name="area" placeholder="Area" onChange={handleChange} />
-            <input name="min" placeholder="Min Price" onChange={handleChange} />
-            <input name="max" placeholder="Max Price" onChange={handleChange} />
-            <input name="amenities" placeholder="Amenities" onChange={handleChange} className="col-span-2" />
-            <input name="rules" placeholder="Rules" onChange={handleChange} className="col-span-2" />
-            <input name="photos" placeholder="Photo URLs" onChange={handleChange} className="col-span-2" />
-            <button className="col-span-2 bg-indigo-600 text-white p-2">Add PG</button>
+          <form onSubmit={handleAddPg} className="bg-white p-6 rounded-2xl shadow grid md:grid-cols-2 gap-4">
+            <input name="pgName" placeholder="PG Name" onChange={handleChange} className="input" required />
+            <input name="description" placeholder="Description" onChange={handleChange} className="input" />
+            <input name="city" placeholder="City" onChange={handleChange} className="input" />
+            <input name="area" placeholder="Area" onChange={handleChange} className="input" />
+            <input name="min" placeholder="Min Price" onChange={handleChange} className="input" />
+            <input name="max" placeholder="Max Price" onChange={handleChange} className="input" />
+            <input name="amenities" placeholder="Amenities (comma separated)" onChange={handleChange} className="input col-span-2" />
+            <input name="rules" placeholder="Rules" onChange={handleChange} className="input col-span-2" />
+            <input name="photos" placeholder="Photo URLs" onChange={handleChange} className="input col-span-2" />
+
+            <button className="col-span-2 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+              Add PG
+            </button>
           </form>
         )}
 
         {/* ADD ROOM */}
         {activeTab === "addRoom" && (
-          <form onSubmit={handleAddRoom} className="grid md:grid-cols-2 gap-4 bg-white p-6 rounded shadow">
+          <form onSubmit={handleAddRoom} className="bg-white p-6 rounded-2xl shadow grid md:grid-cols-2 gap-4">
+            <input name="pgId" placeholder="PG ID" onChange={handleRoomChange} className="input col-span-2" required />
+            <input name="roomType" placeholder="Room Type" onChange={handleRoomChange} className="input" />
+            <input name="totalBeds" type="number" placeholder="Total Beds" onChange={handleRoomChange} className="input" />
+            <input name="availableBeds" type="number" placeholder="Available Beds" onChange={handleRoomChange} className="input" />
+            <input name="monthlyRent" type="number" placeholder="Rent" onChange={handleRoomChange} className="input" />
+            <input name="deposit" type="number" placeholder="Deposit" onChange={handleRoomChange} className="input" />
+            <input name="roomAmenities" placeholder="Amenities" onChange={handleRoomChange} className="input col-span-2" />
 
-            <input
-  name="pgId"
-  placeholder="Enter PG ID"
-  value={roomForm.pgId}
-  onChange={handleRoomChange}
-  className="p-3 border rounded-lg col-span-2"
-  required
-/>
-
-            <input name="roomType" placeholder="Room Type" onChange={handleRoomChange} required />
-            <input name="totalBeds" type="number" placeholder="Total Beds" onChange={handleRoomChange} />
-            <input name="availableBeds" type="number" placeholder="Available Beds" onChange={handleRoomChange} />
-            <input name="monthlyRent" type="number" placeholder="Rent" onChange={handleRoomChange} />
-            <input name="deposit" type="number" placeholder="Deposit" onChange={handleRoomChange} />
-            <input name="roomAmenities" placeholder="Amenities" onChange={handleRoomChange} className="col-span-2" />
-
-            <button className="col-span-2 bg-green-600 text-white p-2">
+            <button className="col-span-2 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
               Add Room
             </button>
           </form>
@@ -265,14 +209,19 @@ export default function Landlord() {
 
         {/* MANAGE PGS */}
         {activeTab === "pgs" && (
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-3 gap-6">
             {pgs.map(pg => (
-              <div key={pg._id} className="bg-white p-4 rounded shadow">
+              <div key={pg._id} className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden">
                 <img src={pg.photos?.[0]} className="h-40 w-full object-cover" />
-                <h3>{pg.pgName}</h3>
-                <button onClick={() => handleDeletePg(pg._id)} className="bg-red-500 text-white p-1 mt-2 w-full">
-                  Delete
-                </button>
+                <div className="p-4">
+                  <h3 className="font-semibold text-lg">{pg.pgName}</h3>
+                  <button
+                    onClick={() => handleDeletePg(pg._id)}
+                    className="bg-red-500 text-white w-full mt-3 py-1 rounded hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -280,26 +229,38 @@ export default function Landlord() {
 
         {/* BOOKINGS */}
         {activeTab === "bookings" && (
-          <table className="w-full bg-white">
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>PG</th>
-                <th>Room</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map(b => (
-                <tr key={b._id}>
-                  <td>{b.userId?.firstName}</td>
-                  <td>{b.pgId?.pgName}</td>
-                  <td>{b.roomId?.roomType}</td>
-                  <td>{b.status}</td>
+          <div className="bg-white rounded-2xl shadow overflow-x-auto">
+            <table className="w-full text-center">
+              <thead className="bg-indigo-600 text-white">
+                <tr>
+                  <th className="p-3">User</th>
+                  <th className="p-3">PG</th>
+                  <th className="p-3">Room</th>
+                  <th className="p-3">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {bookings.map(b => (
+                  <tr key={b._id} className="border-b">
+                    <td className="p-3">{b.userId?.firstName}</td>
+                    <td>{b.pgId?.pgName}</td>
+                    <td>{b.roomId?.roomType}</td>
+                    <td>
+                      <span className={`px-3 py-1 rounded-full text-sm ${
+                        b.status === "confirmed"
+                          ? "bg-green-100 text-green-600"
+                          : b.status === "cancelled"
+                          ? "bg-red-100 text-red-600"
+                          : "bg-yellow-100 text-yellow-600"
+                      }`}>
+                        {b.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
       </div>
