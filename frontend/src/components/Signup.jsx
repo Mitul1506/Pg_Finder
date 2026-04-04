@@ -3,7 +3,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-
 const Signup = () => {
   const navigate = useNavigate();
 
@@ -13,6 +12,7 @@ const Signup = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "user", // ✅ ADDED ROLE (default user)
   });
 
   const [errors, setErrors] = useState({});
@@ -76,29 +76,28 @@ const Signup = () => {
           lastName: formData.lastname,
           email: formData.email,
           password: formData.password,
-          
+          role: formData.role, // ✅ SEND ROLE
         }
       );
 
       console.log("Signup Success:", response.data);
 
-      alert("Account Created Successfully 🎉");
+      toast.success("Account Created Successfully 🎉");
       navigate("/login");
 
     } catch (error) {
       console.error("Signup Error:", error.response?.data || error.message);
 
       if (error.response?.data?.message) {
-        alert(error.response.data.message);
+        toast.error(error.response.data.message);
       } else {
-        alert("Registration Failed ❌");
+        toast.error("Registration Failed ❌");
       }
 
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
@@ -109,7 +108,7 @@ const Signup = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* Full Name */}
+          {/* First Name */}
           <div>
             <label className="block text-gray-700 mb-1">First Name</label>
             <input
@@ -125,6 +124,7 @@ const Signup = () => {
             )}
           </div>
 
+          {/* Last Name */}
           <div>
             <label className="block text-gray-700 mb-1">Last Name</label>
             <input
@@ -198,6 +198,20 @@ const Signup = () => {
                 {errors.confirmPassword}
               </p>
             )}
+          </div>
+
+          {/* ✅ ROLE DROPDOWN (NEW) */}
+          <div>
+            <label className="block text-gray-700 mb-1">Register As</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              <option value="user">User</option>
+              <option value="landlord">Landlord</option>
+            </select>
           </div>
 
           {/* Button */}

@@ -6,34 +6,39 @@ const jwt = require("jsonwebtoken")
 
 const SECRET = "secret" 
 
-
 const registerUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role } = req.body
+    const { firstName, lastName, email, password, role } = req.body;
 
-    const existingUser = await userSchema.findOne({ email })
+    const existingUser = await userSchema.findOne({ email });
 
     if (existingUser) {
       return res.status(400).json({
-        message: "User already exists with this email"
-      })
+        message: "User already exists with this email",
+      });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Allow only valid roles
+    let userRole = "user";
+    if (role && ["user", "landlord"].includes(role)) {
+      userRole = role;
+    }
 
     const savedUser = await userSchema.create({
       firstName,
       lastName,
       email,
-      role,
-      password: hashedPassword
-    })
+      password: hashedPassword,
+      role: userRole, // ✅ controlled role
+    });
 
     await mailSend(
       email,
       "Welcome to PG Finder",
-      `Hello ${firstName}, your account has been created successfully. Welcome to PG Finder!`
-    )
+      `Hello ${firstName}, your account has been created successfully as ${userRole}.`
+    );
 
     res.status(201).json({
       message: "User created successfully",
@@ -42,19 +47,16 @@ const registerUser = async (req, res) => {
         firstName: savedUser.firstName,
         lastName: savedUser.lastName,
         email: savedUser.email,
-        phone: savedUser.phone,
-        role: savedUser.role
-      }
-    })
-
+        role: savedUser.role,
+      },
+    });
   } catch (err) {
     res.status(500).json({
       message: "Error while creating user",
-      error: err.message
-    })
+      error: err.message,
+    });
   }
-}
-
+};
 
 const loginUser = async (req, res) => {
   try {
