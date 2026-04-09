@@ -98,7 +98,7 @@ const UserNavBar = () => {
           <div className="hidden md:flex items-center space-x-5">
 
             {/* Notification */}
-            {token && (
+            {/* {token && (
               <button
                 onClick={() => navigate("/Notification")}
                 className="relative text-xl hover:text-indigo-600 transition"
@@ -106,7 +106,7 @@ const UserNavBar = () => {
                 🔔
                
               </button>
-            )}
+            )} */}
 
             {/* Profile */}
             {token ? (
@@ -140,6 +140,10 @@ const UserNavBar = () => {
 
                     <Link to="/mybookings" className="block px-4 py-2 hover:bg-gray-100">
                       📖 My Bookings
+                    </Link>
+
+                    <Link to="/mymessages" className="block px-4 py-2 hover:bg-gray-100">
+                      📖 My Messages
                     </Link>
 
                     <Link to="/payments" className="block px-4 py-2 hover:bg-gray-100">

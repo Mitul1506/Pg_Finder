@@ -7,7 +7,7 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 export default function Login() {
 
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ IMPORTANT
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -39,7 +39,7 @@ export default function Login() {
         const user = res.data.user;
         const token = res.data.token;
 
-        // ✅ STORE DATA
+        // STORE DATA
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("token", token);
 
@@ -49,14 +49,12 @@ export default function Login() {
 
         toast.success("Login successful 🎉");
 
-        // ================= REDIRECT LOGIC =================
+        // REDIRECT LOGIC
         const redirectPath = location.state?.from;
 
         if (redirectPath) {
-          // ✅ Go back to previous page (RoomDetails etc.)
           navigate(redirectPath);
         } else {
-          // ✅ Role-based fallback
           if (user?.role === "admin") {
             navigate("/AdminSideBar/dashboard");
           } else if (user?.role === "landlord") {
@@ -73,6 +71,12 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ================= SKIP LOGIN =================
+  const handleSkip = () => {
+    toast.info("Continuing as guest 👤");
+    navigate("/");
   };
 
   return (
@@ -120,13 +124,22 @@ export default function Login() {
             )}
           </div>
 
-          {/* BUTTON */}
+          {/* LOGIN BUTTON */}
           <button
             type="submit"
             disabled={loading}
             className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
           >
             {loading ? "Logging in..." : "Login"}
+          </button>
+
+          {/* SKIP BUTTON */}
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition"
+          >
+            Skip for now
           </button>
 
           {/* FORGOT PASSWORD */}

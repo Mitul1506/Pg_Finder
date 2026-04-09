@@ -21,6 +21,8 @@ const reportRoutes = require("./src/routes/ReportRoutes")
 const disputeRoutes = require("./src/routes/DisputeRoutes")
 const mediaRoutes = require("./src/routes/MediaRoutes")
 const paymentRoutes = require("./src/routes/PaymentRoutes");
+const messageRoutes = require("./src/routes/MessageRoutes");
+
 
 app.use("/payments", paymentRoutes);
 app.use("/media",mediaRoutes)
@@ -35,6 +37,7 @@ app.use("/reviews", reviewRoutes)
 app.use("/notifications", notificationRoutes)
 app.use("/reports", reportRoutes)
 app.use("/disputes", disputeRoutes)
+app.use("/messages",messageRoutes)
 
 
 

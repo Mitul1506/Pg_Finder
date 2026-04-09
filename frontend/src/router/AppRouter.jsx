@@ -30,6 +30,7 @@ import { ForgotPassword } from "../components/ForgotPassword";
 import { ResetPassword } from "../components/ResetPassword";
 import AdminDisputes from "../components/admin/AdminDisputes";
 import Payments from "../components/user/Payments";
+import MyMessages from "../components/user/MyMessages";
 
 const router = createBrowserRouter([
 
@@ -51,6 +52,7 @@ const router = createBrowserRouter([
       { path: "roomlist/:pgId", element: <RoomList /> },
       { path: "room/:id", element: <RoomDetails /> },
       {path: "/payments",element:<Payments/>},
+      {path: "/mymessages",element:<MyMessages/>},
 
       // 🔐 protected user routes (optional but good)
       {

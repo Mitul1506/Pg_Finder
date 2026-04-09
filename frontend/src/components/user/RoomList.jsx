@@ -6,7 +6,8 @@ import { toast } from "react-toastify"
 export default function RoomList(){
 
   const [rooms,setRooms] = useState([])
-  const [pg,setPg] = useState(null) // ✅ NEW STATE
+  const [pg,setPg] = useState(null)
+  const [message,setMessage] = useState("")
 
   const { pgId } = useParams()
   const navigate = useNavigate()
@@ -35,6 +36,38 @@ export default function RoomList(){
     getRooms()
     getPgDetails()
   },[])
+
+  // ================= SEND MESSAGE =================
+  const handleSendMessage = async()=>{
+    try{
+
+      const user = JSON.parse(localStorage.getItem("user"))
+
+      if(!user){
+        toast.error("Please login first")
+        navigate("/login", { state: { from: `/RoomList/${pgId}` } })
+        return
+      }
+
+      if(!message.trim()){
+        toast.error("Message cannot be empty")
+        return
+      }
+
+      await axios.post("http://localhost:3000/messages",{
+        senderId:user.id,
+        receiverId:pg.landlordId._id,
+        pgId:pg._id,
+        message
+      })
+
+      toast.success("Message sent ✅")
+      setMessage("")
+
+    }catch(err){
+      toast.error("Failed to send message")
+    }
+  }
 
   return(
 
@@ -67,7 +100,7 @@ export default function RoomList(){
             className="bg-white rounded-xl shadow-md hover:shadow-xl transition overflow-hidden"
           >
 
-            {/* ROOM IMAGE */}
+            {/* IMAGE */}
             <img
               src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2"
               alt="room"
@@ -76,12 +109,10 @@ export default function RoomList(){
 
             <div className="p-5">
 
-              {/* ROOM TYPE */}
               <h2 className="text-xl font-semibold mb-2">
                 {room.roomType} Room
               </h2>
 
-              {/* BEDS */}
               <p className="text-gray-600">
                 Total Beds: {room.totalBeds}
               </p>
@@ -90,17 +121,14 @@ export default function RoomList(){
                 Available Beds: {room.availableBeds}
               </p>
 
-              {/* RENT */}
               <p className="text-indigo-600 font-bold text-lg mt-2">
                 ₹ {room.monthlyRent} / month
               </p>
 
-              {/* DEPOSIT */}
               <p className="text-gray-600 mb-2">
                 Deposit: ₹ {room.deposit}
               </p>
 
-              {/* AMENITIES */}
               <div className="flex flex-wrap gap-2 mt-2">
                 {room.roomAmenities?.map((a,index)=>(
                   <span
@@ -112,7 +140,6 @@ export default function RoomList(){
                 ))}
               </div>
 
-              {/* BUTTON */}
               <div className="mt-4">
                 <button
                   onClick={()=>navigate(`/room/${room._id}`)}
@@ -129,6 +156,35 @@ export default function RoomList(){
         ))}
 
       </div>
+
+      {/* ================= MESSAGE OWNER ================= */}
+      {pg?.landlordId && (
+        <div className="bg-white p-6 rounded-xl shadow mt-12 max-w-lg mx-auto">
+
+          <h2 className="text-xl font-semibold mb-3 text-center">
+            Message Owner
+          </h2>
+
+          <p className="text-sm text-gray-500 text-center mb-3">
+            Have questions? Send a message to the owner
+          </p>
+
+          <textarea
+            placeholder="Write your message..."
+            className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            value={message}
+            onChange={(e)=>setMessage(e.target.value)}
+          />
+
+          <button
+            onClick={handleSendMessage}
+            className="w-full mt-3 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+          >
+            Send Message
+          </button>
+
+        </div>
+      )}
 
     </div>
 

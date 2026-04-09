@@ -43,6 +43,7 @@ const getPgById = async(req,res)=>{
     try{
 
         const pg = await pgSchema.findById(req.params.id)
+        .populate("landlordId", "firstName email phone") // 🔥 IMPORTANT
 
         res.status(200).json({
             message:"pg fetched",

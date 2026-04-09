@@ -9,6 +9,7 @@ export default function Landlord() {
   const [pgs, setPgs] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [messages, setMessages] = useState([]); // ✅ ADDED
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -34,24 +35,28 @@ export default function Landlord() {
     deposit: "",
     roomAmenities: "",
   });
-
+const [replyInputs, setReplyInputs] = useState({});
   const handleLogout = () => {
     localStorage.removeItem("user");
     toast.success("Logged out 👋");
     navigate("/login");
   };
 
+  // ================= FETCH DATA =================
   const fetchData = async () => {
     try {
-      const [pgRes, roomRes, bookingRes] = await Promise.all([
+      const [pgRes, roomRes, bookingRes, messageRes] = await Promise.all([
         axios.get(`${BASE_URL}/pgs/landlord/${user.id}`),
         axios.get(`${BASE_URL}/rooms/landlord/${user.id}`),
         axios.get(`${BASE_URL}/bookings/landlord/${user.id}`),
+        axios.get(`${BASE_URL}/messages/landlord/${user.id}`), // ✅ ADDED
       ]);
 
       setPgs(pgRes.data.data || []);
       setRooms(roomRes.data.data || []);
       setBookings(bookingRes.data.data || []);
+      setMessages(messageRes.data.data || []); // ✅ ADDED
+
     } catch {
       toast.error("Failed to load data");
     } finally {
@@ -63,6 +68,7 @@ export default function Landlord() {
     if (user) fetchData();
   }, []);
 
+  // ================= FORM HANDLERS =================
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -85,6 +91,7 @@ export default function Landlord() {
     setRoomForm({ ...roomForm, [e.target.name]: e.target.value });
   };
 
+  // ================= ADD PG =================
   const handleAddPg = async (e) => {
     e.preventDefault();
     try {
@@ -104,6 +111,7 @@ export default function Landlord() {
     }
   };
 
+  // ================= ADD ROOM =================
   const handleAddRoom = async (e) => {
     e.preventDefault();
     try {
@@ -124,6 +132,7 @@ export default function Landlord() {
     }
   };
 
+  // ================= DELETE PG =================
   const handleDeletePg = async (id) => {
     try {
       await axios.delete(`${BASE_URL}/pgs/${id}`);
@@ -131,6 +140,30 @@ export default function Landlord() {
       fetchData();
     } catch {
       toast.error("Delete failed");
+    }
+  };
+
+  // ================= REPLY MESSAGE =================
+  const handleReply = async (messageId) => {
+    const replyText = replyInputs[messageId];
+
+    if (!replyText || !replyText.trim()) {
+      return toast.error("Reply cannot be empty");
+    }
+
+    try {
+      await axios.put(`${BASE_URL}/messages/${messageId}`, {
+        reply: replyText,
+      });
+
+      toast.success("Reply sent ✅");
+
+      // clear input
+      setReplyInputs((prev) => ({ ...prev, [messageId]: "" }));
+
+      fetchData();
+    } catch {
+      toast.error("Failed to send reply");
     }
   };
 
@@ -148,6 +181,7 @@ export default function Landlord() {
           <button onClick={() => setActiveTab("addRoom")}>Add Room</button>
           <button onClick={() => setActiveTab("pgs")}>Manage PGs</button>
           <button onClick={() => setActiveTab("bookings")}>Bookings</button>
+          <button onClick={() => setActiveTab("messages")}>Messages</button> {/* ✅ ADDED */}
         </div>
 
         <button onClick={handleLogout} className="bg-red-500 px-4 py-1 rounded hover:bg-red-600">
@@ -163,7 +197,7 @@ export default function Landlord() {
             {[{ title: "Total PGs", value: pgs.length },
               { title: "Rooms", value: rooms.length },
               { title: "Bookings", value: bookings.length }].map((card, i) => (
-              <div key={i} className="bg-white p-6 rounded-2xl shadow-md text-center hover:shadow-lg transition">
+              <div key={i} className="bg-white p-6 rounded-2xl shadow-md text-center">
                 <h2 className="text-gray-500">{card.title}</h2>
                 <p className="text-3xl font-bold mt-2">{card.value}</p>
               </div>
@@ -180,11 +214,11 @@ export default function Landlord() {
             <input name="area" placeholder="Area" onChange={handleChange} className="input" />
             <input name="min" placeholder="Min Price" onChange={handleChange} className="input" />
             <input name="max" placeholder="Max Price" onChange={handleChange} className="input" />
-            <input name="amenities" placeholder="Amenities (comma separated)" onChange={handleChange} className="input col-span-2" />
+            <input name="amenities" placeholder="Amenities" onChange={handleChange} className="input col-span-2" />
             <input name="rules" placeholder="Rules" onChange={handleChange} className="input col-span-2" />
-            <input name="photos" placeholder="Photo URLs" onChange={handleChange} className="input col-span-2" />
+            <input name="photos" placeholder="Photos" onChange={handleChange} className="input col-span-2" />
 
-            <button className="col-span-2 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+            <button className="col-span-2 bg-indigo-600 text-white py-2 rounded-lg">
               Add PG
             </button>
           </form>
@@ -201,7 +235,7 @@ export default function Landlord() {
             <input name="deposit" type="number" placeholder="Deposit" onChange={handleRoomChange} className="input" />
             <input name="roomAmenities" placeholder="Amenities" onChange={handleRoomChange} className="input col-span-2" />
 
-            <button className="col-span-2 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+            <button className="col-span-2 bg-green-600 text-white py-2 rounded-lg">
               Add Room
             </button>
           </form>
@@ -211,14 +245,11 @@ export default function Landlord() {
         {activeTab === "pgs" && (
           <div className="grid md:grid-cols-3 gap-6">
             {pgs.map(pg => (
-              <div key={pg._id} className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden">
+              <div key={pg._id} className="bg-white rounded-2xl shadow">
                 <img src={pg.photos?.[0]} className="h-40 w-full object-cover" />
                 <div className="p-4">
-                  <h3 className="font-semibold text-lg">{pg.pgName}</h3>
-                  <button
-                    onClick={() => handleDeletePg(pg._id)}
-                    className="bg-red-500 text-white w-full mt-3 py-1 rounded hover:bg-red-600"
-                  >
+                  <h3>{pg.pgName}</h3>
+                  <button onClick={() => handleDeletePg(pg._id)} className="bg-red-500 text-white w-full mt-2">
                     Delete
                   </button>
                 </div>
@@ -233,33 +264,68 @@ export default function Landlord() {
             <table className="w-full text-center">
               <thead className="bg-indigo-600 text-white">
                 <tr>
-                  <th className="p-3">User</th>
-                  <th className="p-3">PG</th>
-                  <th className="p-3">Room</th>
-                  <th className="p-3">Status</th>
+                  <th>User</th>
+                  <th>PG</th>
+                  <th>Room</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {bookings.map(b => (
-                  <tr key={b._id} className="border-b">
-                    <td className="p-3">{b.userId?.firstName}</td>
+                  <tr key={b._id}>
+                    <td>{b.userId?.firstName}</td>
                     <td>{b.pgId?.pgName}</td>
                     <td>{b.roomId?.roomType}</td>
-                    <td>
-                      <span className={`px-3 py-1 rounded-full text-sm ${
-                        b.status === "confirmed"
-                          ? "bg-green-100 text-green-600"
-                          : b.status === "cancelled"
-                          ? "bg-red-100 text-red-600"
-                          : "bg-yellow-100 text-yellow-600"
-                      }`}>
-                        {b.status}
-                      </span>
-                    </td>
+                    <td>{b.status}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* ✅ UPDATED MESSAGES */}
+        {activeTab === "messages" && (
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h2 className="text-xl font-semibold mb-4">User Messages</h2>
+
+            {messages.length === 0 ? (
+              <p>No messages</p>
+            ) : (
+              messages.map((m) => (
+                <div key={m._id} className="border p-3 mb-3 rounded">
+                  <p><b>User:</b> {m.senderId?.firstName}</p>
+                  <p><b>Message:</b> {m.message}</p>
+
+                  {m.reply ? (
+                    <p className="text-green-600">
+                      <b>Reply:</b> {m.reply}
+                    </p>
+                  ) : (
+                    <div className="mt-2">
+                      <textarea
+                        placeholder="Write reply..."
+                        value={replyInputs[m._id] || ""}
+                        onChange={(e) =>
+                          setReplyInputs({
+                            ...replyInputs,
+                            [m._id]: e.target.value,
+                          })
+                        }
+                        className="w-full border p-2 rounded"
+                      />
+
+                      <button
+                        onClick={() => handleReply(m._id)}
+                        className="bg-green-500 text-white px-3 py-1 mt-2 rounded"
+                      >
+                        Send Reply
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         )}
 
