@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import axiosInstance from "../../utils/axiosConfig";
 import { toast } from "react-toastify";
 import {
   HomeIcon,
@@ -35,13 +36,13 @@ export default function MyBookings() {
   const getBookings = async () => {
     try {
       const userId = user._id || user.id;
-      const res = await axios.get(`http://localhost:3000/bookings/user/${userId}`);
+      const res = await axiosInstance.get(`http://localhost:3000/bookings/user/${userId}`);
       setBookings(res.data.data);
 
       const disputesData = {};
       for (let b of res.data.data) {
         try {
-          const d = await axios.get(`http://localhost:3000/disputes/booking/${b._id}`);
+          const d = await axiosInstance.get(`http://localhost:3000/disputes/booking/${b._id}`);
           disputesData[b._id] = d.data.data;
         } catch (err) {
           disputesData[b._id] = null;
@@ -58,7 +59,7 @@ export default function MyBookings() {
   const cancelBooking = async (id) => {
     if (!window.confirm("Are you sure you want to cancel this booking?")) return;
     try {
-      await axios.put(`http://localhost:3000/bookings/cancel/${id}`);
+      await axiosInstance.put(`http://localhost:3000/bookings/cancel/${id}`);
       toast.success("Booking cancelled successfully");
       getBookings();
     } catch (err) {
@@ -78,7 +79,7 @@ export default function MyBookings() {
         return;
       }
 
-      await axios.post("http://localhost:3000/disputes", {
+      await axiosInstance.post("http://localhost:3000/disputes", {
         bookingId: selectedBooking._id,
         raisedBy: user._id || user.id,
         againstUserId: selectedBooking.pgId?.landlordId,
