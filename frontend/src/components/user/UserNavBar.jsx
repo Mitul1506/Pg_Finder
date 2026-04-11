@@ -15,6 +15,7 @@ import {
   BellIcon,
   MagnifyingGlassIcon,
   HeartIcon,
+   ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
 const UserNavBar = () => {
@@ -32,7 +33,9 @@ const UserNavBar = () => {
   const navLinks = [
     { name: "Home", path: "/", icon: HomeIcon },
     { name: "Find PG", path: "/pg-list", icon: BuildingOfficeIcon },
-    { name: "My Bookings", path: "/mybookings", icon: CalendarIcon },
+   
+    { name: "Compare", path: "/compare-pgs", icon: ChartBarIcon },
+     { name: "My Bookings", path: "/mybookings", icon: CalendarIcon },
   ];
 
   // Load user

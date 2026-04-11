@@ -7,18 +7,14 @@ import {
   MapPinIcon,
   CurrencyRupeeIcon,
   WifiIcon,
-  DevicePhoneMobileIcon,
-  AcademicCapIcon,
   ShieldCheckIcon,
   HeartIcon,
-  StarIcon,
-  UsersIcon,
-  HomeModernIcon,
   BuildingOfficeIcon,
   FireIcon,
   ChevronRightIcon,
   FunnelIcon,
   XMarkIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolidIcon } from "@heroicons/react/24/solid";
 
@@ -30,6 +26,7 @@ export default function PgList() {
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
   const [likedPgs, setLikedPgs] = useState([]);
+  const [compareList, setCompareList] = useState([]);
   const navigate = useNavigate();
 
   // GET ALL PGS
@@ -44,6 +41,11 @@ export default function PgList() {
 
   useEffect(() => {
     getPgs();
+    // Load compare list from localStorage
+    const savedCompare = localStorage.getItem("comparePGs");
+    if (savedCompare) {
+      setCompareList(JSON.parse(savedCompare));
+    }
   }, []);
 
   // Get unique cities for filter
@@ -89,6 +91,29 @@ export default function PgList() {
     toast.success(likedPgs.includes(pgId) ? "Removed from favorites" : "Added to favorites");
   };
 
+  // Add to compare function
+  const addToCompare = (pg, e) => {
+    e.stopPropagation();
+    const saved = localStorage.getItem("comparePGs");
+    let currentList = saved ? JSON.parse(saved) : [];
+    
+    if (currentList.some(item => item._id === pg._id)) {
+      toast.info("PG already in compare list");
+      return;
+    }
+    
+    if (currentList.length >= 4) {
+      toast.warning("You can compare up to 4 PGs only");
+      return;
+    }
+    
+    currentList.push(pg);
+    localStorage.setItem("comparePGs", JSON.stringify(currentList));
+    setCompareList(currentList);
+    window.dispatchEvent(new Event("compareUpdated"));
+    toast.success(`${pg.pgName} added to compare`);
+  };
+
   const clearFilters = () => {
     setSelectedCity("");
     setSelectedPriceRange("");
@@ -114,12 +139,23 @@ export default function PgList() {
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl"></div>
         
         <div className="relative max-w-7xl mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-center mb-4">
-            Find Your Perfect PG
-          </h1>
-          <p className="text-center text-white/90 text-lg max-w-2xl mx-auto">
-            Discover safe, comfortable, and affordable PG accommodations near you
-          </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                Find Your Perfect PG
+              </h1>
+              <p className="text-white/90 text-lg max-w-2xl">
+                Discover safe, comfortable, and affordable PG accommodations near you
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/compare-pgs")}
+              className="hidden md:flex items-center gap-2 bg-white/20 backdrop-blur-sm px-5 py-3 rounded-xl hover:bg-white/30 transition-all"
+            >
+              <ChartBarIcon className="h-5 w-5" />
+              <span>Compare ({compareList.length})</span>
+            </button>
+          </div>
           
           {/* STATS */}
           <div className="flex justify-center gap-8 mt-8">
@@ -250,7 +286,13 @@ export default function PgList() {
           <p className="text-gray-600">
             Found <span className="font-bold text-indigo-600">{filteredPgs.length}</span> properties
           </p>
-          <p className="text-sm text-gray-500">Showing best matches for you</p>
+          <button
+            onClick={() => navigate("/compare-pgs")}
+            className="md:hidden flex items-center gap-2 text-indigo-600 font-medium"
+          >
+            <ChartBarIcon className="h-5 w-5" />
+            Compare ({compareList.length})
+          </button>
         </div>
 
         {/* NO RESULTS */}
@@ -269,6 +311,7 @@ export default function PgList() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPgs.map((pg) => {
               const priceTag = getPriceTag(pg.priceRange?.min, pg.priceRange?.max);
+              const isInCompare = compareList.some(item => item._id === pg._id);
               return (
                 <div
                   key={pg._id}
@@ -365,17 +408,30 @@ export default function PgList() {
                       )}
                     </div>
                     
-                    {/* BUTTON */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/RoomList/${pg._id}`);
-                      }}
-                      className="w-full mt-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn"
-                    >
-                      <span>View Available Rooms</span>
-                      <ChevronRightIcon className="h-4 w-4 group-hover/btn:translate-x-1 transition" />
-                    </button>
+                    {/* BUTTONS */}
+                    <div className="flex gap-2 mt-5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/RoomList/${pg._id}`);
+                        }}
+                        className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn"
+                      >
+                        <span>View Rooms</span>
+                        <ChevronRightIcon className="h-4 w-4 group-hover/btn:translate-x-1 transition" />
+                      </button>
+                      <button
+                        onClick={(e) => addToCompare(pg, e)}
+                        className={`px-4 py-2.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-1 ${
+                          isInCompare
+                            ? "bg-green-100 text-green-600 cursor-default"
+                            : "border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+                        }`}
+                        disabled={isInCompare}
+                      >
+                        <ChartBarIcon className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
